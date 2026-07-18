@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>希沃智教π｜AI Native 作业批改与教学闭环系统</title>
+    <meta
+      name="description"
+      content="希沃智教π是一款面向教师的 AI 作业批改与教学闭环系统，支持移动采集、异步批改、学情诊断、讲评课生成和飞书协同。"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header" aria-label="主导航">
+      <a class="brand" href="#top" aria-label="希沃智教π 首页">
+        <span class="brand-mark">π</span>
+        <span>希沃智教π</span>
+      </a>
+      <nav class="nav-links" aria-label="页面导航">
+        <a href="#solution">解决方案</a>
+        <a href="#ecosystem">生态融合</a>
+        <a href="#algorithm">算法实现</a>
+        <a href="#miniapp">小程序</a>
+      </nav>
+      <a class="header-action" href="#demo">查看 Demo</a>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero-image" src="./assets/hero-classroom.png" alt="教师使用手机采集作业，教室大屏展示 AI 学情分析" />
+        <div class="hero-shade"></div>
+        <div class="hero-content reveal is-visible">
+          <p class="eyebrow">2026 AI 先锋未来人才大赛 · 视源股份命题</p>
+          <h1 id="hero-title">希沃智教π</h1>
+          <p class="hero-subtitle">拍完作业，即生成批改、学情和下一节讲评课。</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#solution">进入方案</a>
+            <a class="button secondary" href="#miniapp">看小程序界面</a>
+          </div>
+        </div>
+        <div class="hero-status reveal is-visible delay-2" aria-label="产品核心数据">
+          <span>40 人作业采集 &lt; 15 分钟</span>
+          <span>采集与批改异步并行</span>
+          <span>TOP3 学情即时诊断</span>
+        </div>
+      </section>
+
+      <section class="section intro" aria-labelledby="intro-title">
+        <div class="section-kicker">为什么不是另一个拍照批改工具</div>
+        <h2 id="intro-title">老师真正累的，不只是在判对错。</h2>
+        <p>
+          一摞乱序作业本里，老师要确认是谁的作业、哪一页、哪几题、按什么标准给分，还要把结果整理成讲评课。希沃智教π把“批改”变成一个 AI Native 流水线，让每次作业直接进入教学闭环。
+        </p>
+      </section>
+
+      <section id="solution" class="section solution" aria-labelledby="solution-title">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">核心流程</div>
+            <h2 id="solution-title">先建标准，再高速采集，后台同步判分。</h2>
+          </div>
+          <p>符合校内设备管理要求，由教师完成采集；学生和家长不需要用手机上传作业。</p>
+        </div>
+        <div class="workflow" aria-label="作业批改核心流程">
+          <article class="workflow-step">
+            <span>01</span>
+            <h3>拍空白题目</h3>
+            <p>自动识别题框、题号、分值、题型和知识点。</p>
+          </article>
+          <article class="workflow-step">
+            <span>02</span>
+            <h3>拍标准答案</h3>
+            <p>AI 生成过程分 Rubric，教师确认后生效。</p>
+          </article>
+          <article class="workflow-step">
+            <span>03</span>
+            <h3>拍学生姓名</h3>
+            <p>姓名 OCR 与班级名单匹配，乱序作业当场绑定。</p>
+          </article>
+          <article class="workflow-step">
+            <span>04</span>
+            <h3>拍作答内容</h3>
+            <p>拍第二页时，第一页已经进入 OCR 和判分队列。</p>
+          </article>
+          <article class="workflow-step">
+            <span>05</span>
+            <h3>教师复核</h3>
+            <p>主观题、低置信度题、异常学生自动进入重点队列。</p>
+          </article>
+          <article class="workflow-step">
+            <span>06</span>
+            <h3>生成讲评</h3>
+            <p>输出丢分 TOP3、低分 TOP3、讲评教案和白板课件。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section comparison" aria-labelledby="compare-title">
+        <div class="section-kicker">产品优势</div>
+        <h2 id="compare-title">从“批完了”到“下一节课知道怎么上”。</h2>
+        <div class="compare-grid">
+          <div class="compare-column muted">
+            <h3>普通拍照批改</h3>
+            <ul>
+              <li>偏学生或家长上传</li>
+              <li>依赖题库匹配</li>
+              <li>输出对错和错题</li>
+              <li>讲评课仍需老师二次整理</li>
+            </ul>
+          </div>
+          <div class="compare-column strong">
+            <h3>希沃智教π</h3>
+            <ul>
+              <li>教师现场高速采集</li>
+              <li>本次作业 Rubric 生成</li>
+              <li>输出错因、过程分和置信度</li>
+              <li>一键生成学情报告与讲评课</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="ecosystem" class="section ecosystem" aria-labelledby="ecosystem-title">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">希沃生态</div>
+            <h2 id="ecosystem-title">把作业数据送回课堂现场。</h2>
+          </div>
+          <p>智教π定位为希沃生态中“评”的组件，连接白板、大屏、易课堂、视频展台和 AI 教学空间。</p>
+        </div>
+        <div class="ecosystem-map">
+          <div class="eco-core">
+            <span>AI Native</span>
+            <strong>希沃智教π</strong>
+            <small>采集 · 批改 · 诊断 · 讲评</small>
+          </div>
+          <div class="eco-node n1">希沃白板<br /><span>讲评课件</span></div>
+          <div class="eco-node n2">希沃大屏<br /><span>匿名错题展示</span></div>
+          <div class="eco-node n3">易课堂<br /><span>变式练习</span></div>
+          <div class="eco-node n4">视频展台<br /><span>硬件采集</span></div>
+          <div class="eco-node n5">AI 教学空间<br /><span>教案生成</span></div>
+          <div class="eco-node n6">管理平台<br /><span>过程评价</span></div>
+        </div>
+      </section>
+
+      <section class="section feishu" aria-labelledby="feishu-title">
+        <div class="section-kicker">飞书 AI 协同</div>
+        <h2 id="feishu-title">让批改结果自动流转，而不是躺在系统里。</h2>
+        <div class="feishu-layout">
+          <div class="feishu-copy">
+            <p>
+              飞书承担“协作与监控中枢”：机器人推送批改进度，消息卡片展示 TOP3 学情，多维表格沉淀作业记录，Aily 作为教研助教回答自然语言问题。
+            </p>
+            <div class="message-card" aria-label="飞书消息卡片示意">
+              <div class="card-top">
+                <strong>五年级(2)班 数学作业已完成</strong>
+                <span>刚刚</span>
+              </div>
+              <div class="card-metrics">
+                <span><b>40/45</b> 已完成</span>
+                <span><b>3</b> 重点复核</span>
+                <span><b>2</b> 异常学生</span>
+              </div>
+              <button type="button">生成讲评课</button>
+            </div>
+          </div>
+          <div class="automation-list">
+            <article>
+              <span>Aily</span>
+              <p>“本次最该讲哪三题？”</p>
+            </article>
+            <article>
+              <span>机器人卡片</span>
+              <p>批改完成、异常分和复核任务自动推送。</p>
+            </article>
+            <article>
+              <span>多维表格</span>
+              <p>作业、学生、题目、错因、复核状态持续沉淀。</p>
+            </article>
+            <article>
+              <span>Hermes</span>
+              <p>定时巡检 OCR 失败率、低置信度题目和未复核任务。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="algorithm" class="section algorithm" aria-labelledby="algorithm-title">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">实现算法</div>
+            <h2 id="algorithm-title">五类 Agent 分工，结果可解释、可复核。</h2>
+          </div>
+          <p>不是把整张图丢给大模型，而是拆成稳定的识别、评分、诊断和教学生成链路。</p>
+        </div>
+        <div class="agent-rail">
+          <div class="agent">
+            <span>OCR Agent</span>
+            <p>切题、手写体、公式、姓名识别</p>
+          </div>
+          <div class="agent">
+            <span>Rubric Agent</span>
+            <p>答案解析、步骤分、知识点映射</p>
+          </div>
+          <div class="agent">
+            <span>Grading Agent</span>
+            <p>客观题比对、主观题证据评分</p>
+          </div>
+          <div class="agent">
+            <span>Diagnosis Agent</span>
+            <p>六维错因、异常分、掌握率计算</p>
+          </div>
+          <div class="agent">
+            <span>Teaching Agent</span>
+            <p>讲评教案、变式题、家校反馈</p>
+          </div>
+        </div>
+        <div class="tech-stack">
+          <span>PaddleOCR / OpenCV</span>
+          <span>Qwen-VL / 豆包视觉 / GPT-4o</span>
+          <span>DeepSeek / 通义 / 豆包</span>
+          <span>FastAPI + Redis Queue</span>
+          <span>PostgreSQL + pgvector</span>
+        </div>
+      </section>
+
+      <section id="miniapp" class="section miniapp" aria-labelledby="miniapp-title">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">App / 小程序原型</div>
+            <h2 id="miniapp-title">老师只需要按真实批改节奏往前拍。</h2>
+          </div>
+          <p>界面围绕“拍姓名、拍作答、看队列、看报告”四个高频动作设计，减少录入和等待。</p>
+        </div>
+        <img class="miniapp-image" src="./assets/miniapp-flow.png" alt="希沃智教π小程序四个界面：拍姓名、拍作答、异步批改、学情报告" />
+      </section>
+
+      <section id="demo" class="section demo" aria-labelledby="demo-title">
+        <div class="demo-panel">
+          <div>
+            <div class="section-kicker">提交展示</div>
+            <h2 id="demo-title">一个页面讲清产品、方案、算法和生态价值。</h2>
+          </div>
+          <p>
+            适合放在报名补充材料、作品说明或答辩展示中，也可以继续扩展成真正可运行的批改 Demo。
+          </p>
+          <a class="button primary" href="#top">回到首页</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>希沃智教π · AI Native 作业批改与教学闭环系统</span>
+      <span>Built for 飞书 AI 先锋未来人才大赛</span>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
