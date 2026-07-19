@@ -2,11 +2,17 @@
 .git/
 .vercel/
 screenshots/
+孟博/
+docx_render*/
+font_test*/
+font_test_*.docx
+scripts/
 报名材料*/
 报名材料——李亚奇/
 队伍前期报名材料汇总/
 *.zip
 *.pdf
+*.docx
 开题报告与PRD.md
 希沃智教π_PRD_增强版.md
 希沃智教π_完整版PRD_v2.md

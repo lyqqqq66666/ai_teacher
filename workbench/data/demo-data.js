@@ -579,46 +579,8 @@ window.DEMO_DATA = {
         ],
       },
     ],
-    /* 高中数学题库由 HS_MATH_DEMO + MathPipeline 运行时注入；此处提供兜底 */
-    hs_math: [
-      {
-        id: "hm1",
-        no: "1",
-        type: "选择题",
-        maxScore: 5,
-        knowledge: ["空间向量", "长方体"],
-        stem: "在长方体中化简向量和，选择正确选项。",
-        answer: "D",
-        rubric: [
-          { step: "向量化简", score: 2 },
-          { step: "选项比对", score: 3 },
-        ],
-      },
-      {
-        id: "hm2",
-        no: "2",
-        type: "选择题",
-        maxScore: 5,
-        knowledge: ["共面向量"],
-        stem: "三向量共面求参数。",
-        answer: "C",
-        rubric: [{ step: "共面条件", score: 5 }],
-      },
-      {
-        id: "hm20",
-        no: "20",
-        type: "解答题",
-        maxScore: 12,
-        knowledge: ["圆", "应用题"],
-        stem: "红谷隧道圆拱能否驶入货车。",
-        answer: "建系求圆方程并判断位置关系。",
-        rubric: [
-          { step: "建系", score: 3 },
-          { step: "求方程", score: 4 },
-          { step: "判断结论", score: 5 },
-        ],
-      },
-    ],
+    /* 高中数学完整题库见 data/hs-math-demo.js（HS_MATH_DEMO，约 40+ 题扫描标注） */
+    hs_math: [],
   },
 
   /* 每个学生的批改结果（Demo 预计算） */

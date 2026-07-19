@@ -6,151 +6,96 @@
     <title>希沃智教π｜AI Native 作业批改与教学闭环系统</title>
     <meta
       name="description"
-      content="希沃智教π面向教师纸质作业批改场景，支持 APP、小程序、Web 三端协同，完成教师采集、AI 批改、学情诊断和希沃白板讲评闭环。"
+      content="希沃智教π面向视源股份命题，围绕教师纸质作业采集、AI 批改、学情诊断和希沃白板讲评形成教学闭环。"
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <header class="site-header" aria-label="主导航">
-      <a class="brand" href="#product" aria-label="希沃智教π 首页">
+      <a class="brand" href="#top" aria-label="希沃智教π 首页">
         <img src="./assets/seewo-logo.svg" alt="seewo" />
         <span>智教π</span>
       </a>
       <nav class="nav-links" aria-label="页面导航">
-        <a href="#product">产品介绍</a>
-        <a href="#flow">动态流程</a>
-        <a href="#architecture">技术方案</a>
-        <a href="#ecosystem">希沃生态</a>
-        <a href="#prototype">三端原型</a>
-        <a href="./workbench/">测试工作台</a>
+        <a href="#insight">命题洞察</a>
+        <a href="#solution">解决方案</a>
+        <a href="#innovation">核心创新</a>
+        <a href="#value">落地价值</a>
+        <a href="#demo">Demo</a>
       </nav>
-      <a class="header-action" href="./workbench/">打开 Demo</a>
+      <a class="header-action" href="./workbench/">打开工作台</a>
     </header>
 
-    <main>
-      <section id="product" class="hero section-pad" aria-labelledby="hero-title">
-        <div class="hero-copy reveal is-visible">
-          <p class="eyebrow">希沃教学大模型生态补位 · 过程性作业评价</p>
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero-image" src="./assets/hero-classroom-v2.png" alt="教师在教室里采集纸质作业，希沃白板展示 AI 学情分析" />
+        <div class="hero-shade"></div>
+        <div class="hero-content reveal is-visible">
+          <p class="eyebrow">2026 AI 先锋未来人才大赛 · 视源股份命题</p>
           <h1 id="hero-title">希沃智教π</h1>
-          <p class="hero-subtitle">
-            让老师用手机完成纸质作业采集，AI 在后台完成识别、批改、诊断，并直接生成下一节讲评课。
+          <p class="hero-subtitle">让纸质作业的“评”，自然回到希沃课堂。</p>
+          <p class="hero-copy">
+            老师用手机、视频展台或 Web 上传完成采集，AI 在后台完成题目切分、手写识别、过程判分和学情诊断，最后生成下一节讲评课。
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="#flow">看批改流程</a>
-            <a class="button secondary" href="./workbench/">进入测试工作台</a>
+            <a class="button primary" href="#solution">看整体方案</a>
+            <a class="button secondary" href="./workbench/">进入 Demo</a>
           </div>
-          <div class="hero-metrics" aria-label="核心指标">
-            <span><strong>&lt;15min</strong>40 人作业采集</span>
-            <span><strong>7 Agent</strong>识别到讲评闭环</span>
-            <span><strong>3 端</strong>APP / 小程序 / Web</span>
-          </div>
-        </div>
-        <div class="hero-visual reveal is-visible">
-          <img src="./assets/product-preview-devices.png" alt="希沃智教π Web 复核台、APP 连续采集和小程序快拍界面" />
         </div>
       </section>
 
-      <section class="section-pad insight" aria-labelledby="insight-title">
-        <div class="section-kicker">产品判断</div>
-        <h2 id="insight-title">不是再做一个拍照判题工具，而是补齐希沃生态里的“评”。</h2>
-        <div class="insight-grid">
-          <article>
-            <span>01</span>
-            <h3>真实纸质作业</h3>
-            <p>支持作业本、练习册、试卷、作文等非标准答题卡，适配倾斜、阴影、弯曲、手写过程。</p>
+      <section id="insight" class="section insight" aria-labelledby="insight-title">
+        <div class="section-lead">
+          <p class="eyebrow">开题报告 Part 1 · 命题前置分析与洞察</p>
+          <h2 id="insight-title">老师真正缺的不是“拍照判题”，而是可进入课堂的过程性评价。</h2>
+        </div>
+        <div class="brief-grid">
+          <article class="brief-main">
+            <h3>命题理解</h3>
+            <p>
+              视源股份命题的本质，是补齐希沃生态中“教学评一致性”的“评”环节。学校不能把拍照上传作业的任务转嫁给学生和家长，老师面对的又是乱序、非标准、含手写过程的纸质作业。因此方案必须围绕教师端集中采集、AI 后台异步批改、证据化复核和讲评课生成展开。
+            </p>
           </article>
-          <article>
-            <span>02</span>
-            <h3>教师端集中采集</h3>
-            <p>不把数字化负担转嫁给学生和家长，老师拍姓名即可绑定乱序作业。</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>批改生成教学行动</h3>
-            <p>批改不是终点，系统输出讲评顺序、白板课件、变式练习和飞书复核任务。</p>
-          </article>
+          <div class="brief-points" aria-label="命题痛点">
+            <span><strong>乱序</strong>作业本先要确认身份</span>
+            <span><strong>非标</strong>练习册/作文/过程题难结构化</span>
+            <span><strong>滞后</strong>批完还要二次整理讲评</span>
+          </div>
         </div>
       </section>
 
-      <section id="prototype" class="section-pad prototypes" aria-labelledby="prototype-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">APP · 小程序 · Web</p>
-            <h2 id="prototype-title">三端协同，老师只记住四个动作。</h2>
-          </div>
-          <p>拍题目、拍答案、拍姓名、拍作答。复杂的 OCR、Rubric、判分和讲评生成，都交给后台异步完成。</p>
+      <section id="solution" class="section solution" aria-labelledby="solution-title">
+        <div class="section-lead">
+          <p class="eyebrow">开题报告 Part 2 · 整体解决方案设计</p>
+          <h2 id="solution-title">先建标准，再连续采集，后台同步切题与判分。</h2>
+          <p>
+            系统以 APP / 小程序 / Web 为入口，以 AI 批改中台为核心，连接希沃白板、视频展台、易课堂和飞书协同。前台让老师只完成“拍题目、拍答案、拍姓名、拍作答”，后台完成 OCR、QuestionSplit、Rubric 判分、复核队列和讲评生成。
+          </p>
         </div>
-        <div class="prototype-grid">
-          <article class="surface-card">
-            <div class="device phone">
+
+        <div class="solution-story">
+          <div class="story-controls" role="tablist" aria-label="批改流程">
+            <button class="active" type="button" data-flow="0">01 建标准</button>
+            <button type="button" data-flow="1">02 认身份</button>
+            <button type="button" data-flow="2">03 切题批改</button>
+            <button type="button" data-flow="3">04 复核证据</button>
+            <button type="button" data-flow="4">05 讲评输出</button>
+          </div>
+          <div class="story-stage" aria-live="polite">
+            <div class="phone-sim">
               <div class="phone-top"></div>
-              <div class="scan-stage">
-                <span class="scan-corner tl"></span><span class="scan-corner tr"></span>
-                <span class="scan-corner bl"></span><span class="scan-corner br"></span>
-                <strong>姓名：李明宇</strong>
-                <small>三年级(2)班 · 已匹配</small>
-              </div>
-              <div class="capture-button"></div>
-            </div>
-            <h3>APP 连续采集</h3>
-            <p>适合正式高频使用：离线缓存、清晰度检测、连续拍摄、失败重传。</p>
-          </article>
-          <article class="surface-card">
-            <div class="device mini">
-              <div class="mini-head">小程序快拍</div>
-              <div class="paper-preview">
-                <span></span><span></span><span></span><span></span>
-              </div>
-              <div class="queue-pill">AI 批改中 · 6/18 页</div>
-            </div>
-            <h3>小程序快拍</h3>
-            <p>适合比赛 Demo 和学校试点：低门槛打开，快速体验核心采集链路。</p>
-          </article>
-          <article class="surface-card wide">
-            <div class="device web">
-              <div class="web-sidebar"></div>
-              <div class="web-paper"></div>
-              <div class="web-panel">
-                <span>OCR 识别结果</span>
-                <b>18 / 20</b>
-                <em>TOP3 学习问题</em>
+              <div class="phone-screen">
+                <div class="scan-line"></div>
+                <strong id="flow-screen-title">拍空白题目与答案</strong>
+                <span id="flow-screen-copy">AI 生成题框、题型、分值和 Rubric。</span>
               </div>
             </div>
-            <h3>Web 复核台</h3>
-            <p>左侧原图框选，右侧题卡、步骤分、置信度和扣分证据联动，教师最终确认。</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="flow" class="section-pad flow-section" aria-labelledby="flow-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">动态流程</p>
-            <h2 id="flow-title">从拍照到批改，评委一眼看懂我们怎么实现。</h2>
-          </div>
-          <p>点击步骤卡片查看每个环节的前台体验、后台 Agent 和教师复核策略。</p>
-        </div>
-        <div class="flow-board">
-          <div class="flow-tabs" role="tablist" aria-label="批改流程步骤">
-            <button class="active" data-flow="0" type="button">建标</button>
-            <button data-flow="1" type="button">识别身份</button>
-            <button data-flow="2" type="button">异步批改</button>
-            <button data-flow="3" type="button">教师复核</button>
-            <button data-flow="4" type="button">讲评输出</button>
-          </div>
-          <div class="flow-stage" aria-live="polite">
-            <div class="flow-phone">
-              <div class="phone-top"></div>
-              <div class="flow-screen">
-                <div class="flow-scan-line"></div>
-                <h3 id="flow-screen-title">拍空白题目与答案</h3>
-                <p id="flow-screen-copy">自动切分题框、识别题型、生成分值与 Rubric。</p>
-              </div>
-            </div>
-            <div class="flow-detail">
+            <div class="story-copy">
               <p class="eyebrow" id="flow-agent">Rubric Agent</p>
-              <h3 id="flow-title-dynamic">先把评分标准定清楚</h3>
-              <p id="flow-copy-dynamic">老师先拍标准题目和答案，AI 生成题框、分值、知识点和步骤分标准；Rubric 必须由老师确认后才进入批量判分。</p>
+              <h3 id="flow-title-dynamic">评分标准先由老师确认</h3>
+              <p id="flow-copy-dynamic">
+                系统先理解本次作业，而不是盲目判题。题目、答案、分值和步骤分标准被结构化后，教师确认即可批量复用。
+              </p>
               <div class="flow-tags" id="flow-tags">
                 <span>题框 bbox</span><span>答案解析</span><span>步骤分</span>
               </div>
@@ -159,70 +104,95 @@
         </div>
       </section>
 
-      <section id="architecture" class="section-pad architecture" aria-labelledby="architecture-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">技术方案</p>
-            <h2 id="architecture-title">专用 OCR + 多模态模型 + Rubric 评分智能体。</h2>
-          </div>
-          <p>规则处理确定性任务，AI 处理非结构化理解，教师处理边界判断。</p>
+      <section id="innovation" class="section innovation" aria-labelledby="innovation-title">
+        <div class="section-lead">
+          <p class="eyebrow">核心创新</p>
+          <h2 id="innovation-title">区别于常规方案的三件事。</h2>
         </div>
-        <div class="architecture-grid">
-          <div class="pipeline">
-            <div>OpenCV<br /><span>裁边 / 矫正 / 去阴影</span></div>
-            <div>PaddleOCR<br /><span>印刷体 / 普通手写</span></div>
-            <div>Qwen-VL<br /><span>题框 / 姓名 / 结构化 JSON</span></div>
-            <div>Mathpix<br /><span>公式转 LaTeX</span></div>
-            <div>Rubric Grader<br /><span>步骤分 / 证据 / 置信度</span></div>
-          </div>
-          <div class="mindmap-card">
-            <div class="mind-node root">希沃智教π</div>
-            <div class="mind-node m1">采集工具<br /><small>APP / 小程序 / 视频展台</small></div>
-            <div class="mind-node m2">识别工具<br /><small>OCR / VLM / 公式</small></div>
-            <div class="mind-node m3">判分工具<br /><small>规则 / Rubric / 复核</small></div>
-            <div class="mind-node m4">教学生成<br /><small>白板 / 变式题 / 评语</small></div>
-            <div class="mind-node m5">协同监控<br /><small>飞书 / Aily / Hermes</small></div>
+        <div class="innovation-list">
+          <article>
+            <span>01</span>
+            <div>
+              <h3>乱序作业的身份绑定</h3>
+              <p>老师不必先按学号整理作业本，拍到姓名栏后系统用 OCR + 班级名单模糊匹配确认归属，低置信度再人工确认。</p>
+            </div>
+          </article>
+          <article>
+            <span>02</span>
+            <div>
+              <h3>QuestionSplit 题目切分</h3>
+              <p>支持双栏、四边形裁切、EXIF 方向修正和跨区多块拼接，避免把同一题切成横条或夹带无关内容，保留原图证据。</p>
+            </div>
+          </article>
+          <article>
+            <span>03</span>
+            <div>
+              <h3>Rubric + 教师复核闭环</h3>
+              <p>客观题规则优先，过程题和主观题按 Rubric 给建议分。低置信度、异常分和主观题进入复核，教师修改沉淀为 Bad Case。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section endpoints" aria-labelledby="endpoints-title">
+        <div class="section-lead">
+          <p class="eyebrow">APP · 小程序 · Web</p>
+          <h2 id="endpoints-title">三端不是堆入口，而是分担老师的不同场景。</h2>
+        </div>
+        <div class="endpoint-layout">
+          <img src="./assets/product-preview-devices.png" alt="Web 复核台、APP 连续采集和小程序快拍界面预览" />
+          <div class="endpoint-copy">
+            <p><strong>APP</strong> 承担高频连续采集，支持离线缓存、清晰度检测和失败重传。</p>
+            <p><strong>小程序</strong> 承担低门槛试用和比赛展示，快速完成拍题、拍答案、拍姓名。</p>
+            <p><strong>Web</strong> 承担教师复核、学情看板、讲评课生成和模型服务配置。</p>
           </div>
         </div>
       </section>
 
-      <section id="ecosystem" class="section-pad ecosystem" aria-labelledby="ecosystem-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">希沃生态融合</p>
-            <h2 id="ecosystem-title">批改结果直接回到白板、大屏和易课堂。</h2>
-          </div>
-          <p>希沃 AI 页面强调端侧部署、数据安全、多平台兼容和 AI 助力教学。智教π沿用这个方向，把作业数据变成课堂行动。</p>
+      <section id="value" class="section value" aria-labelledby="value-title">
+        <div class="section-lead">
+          <p class="eyebrow">落地价值</p>
+          <h2 id="value-title">批改结果直接进入希沃课堂和飞书协同。</h2>
         </div>
-        <div class="eco-strip">
-          <article><strong>希沃白板</strong><span>讲评课件 / 错题页 / 板书结构</span></article>
-          <article><strong>AI 教学空间</strong><span>教案目标 / 讲评话术 / 变式练习</span></article>
-          <article><strong>视频展台</strong><span>作业页硬件采集 / 无需手机疲劳拍摄</span></article>
-          <article><strong>易课堂</strong><span>课后巩固 / 课堂互动 / 订正反馈</span></article>
-          <article><strong>飞书协同</strong><span>机器人卡片 / Base 数据 / Aily 问答</span></article>
+        <div class="value-grid">
+          <article>
+            <h3>希沃白板 / 大屏</h3>
+            <p>生成匿名共性错题、知识点热力图、讲评顺序和板书结构，让作业数据回到课堂现场。</p>
+          </article>
+          <article>
+            <h3>视频展台 / 端侧安全</h3>
+            <p>可用视频展台作为采集入口，适配学校已有设备；端侧预处理和私有化部署降低数据顾虑。</p>
+          </article>
+          <article>
+            <h3>飞书机器人 / Base / Aily</h3>
+            <p>批改完成、复核任务、异常学生提醒自动流转，教师可直接问“本次最该讲哪三题”。</p>
+          </article>
+        </div>
+        <div class="metric-strip">
+          <span><strong>&lt;15min</strong>40 人作业采集目标</span>
+          <span><strong>7 Agent</strong>识别到讲评闭环</span>
+          <span><strong>3 端</strong>APP / 小程序 / Web</span>
         </div>
       </section>
 
-      <section class="section-pad demo-entry" aria-labelledby="demo-title">
+      <section id="demo" class="section demo" aria-labelledby="demo-title">
         <div class="demo-copy">
-          <p class="eyebrow">测试工作台</p>
-          <h2 id="demo-title">保留队友 demo 的真实测试能力，视觉统一成希沃风格。</h2>
+          <p class="eyebrow">Demo 工作台</p>
+          <h2 id="demo-title">保留真实测试能力，入口更清楚。</h2>
           <p>
-            工作台包含数学模式 A/B、题目框选、KaTeX 公式字符化、乱序题答对齐、批改复核叠层和 Qwen-VL 本地代理入口。线上版本使用压缩样例图，保证评委可直接打开。
+            工作台已合入孟博新版题目切分、四边形框选、多区域裁切、模型中心和 Qwen-VL 代理状态；线上版本继续使用轻量缩略图，保证评委可直接打开。
           </p>
           <a class="button primary" href="./workbench/">打开测试工作台</a>
         </div>
-        <div class="demo-preview" aria-label="测试工作台预览">
+        <div class="demo-preview" aria-label="工作台预览">
           <div class="demo-window">
             <div class="demo-bar"><span></span><span></span><span></span></div>
-            <div class="demo-layout">
+            <div class="demo-grid">
               <aside></aside>
               <main>
-                <div class="demo-row"></div>
-                <div class="demo-cards">
-                  <span></span><span></span><span></span>
-                </div>
-                <div class="demo-large"></div>
+                <div></div>
+                <div></div>
+                <div></div>
               </main>
             </div>
           </div>

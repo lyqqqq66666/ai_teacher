@@ -98,11 +98,23 @@
         confirmed: !!partial.confirmed,
       },
       // —— 原始图片存档 ——
+      // bbox：外接矩形（兼容）；quad：四边形四点；regions：多块同一题
       archive: {
         pageId: partial.pageId || "",
         pagePath: partial.pagePath || partial.sourceImage || "",
         bbox: partial.bbox || null, // {x,y,w,h} 相对 0~1
-        note: partial.archiveNote || "原图存档，框选区域对应本题",
+        quad: partial.quad || null, // [[x,y]×4] TL-TR-BR-BL，允许非轴对齐
+        regions: Array.isArray(partial.regions)
+          ? partial.regions
+          : partial.quad
+            ? [{ quad: partial.quad, bbox: partial.bbox, order: 0, role: "stem" }]
+            : partial.bbox
+              ? [{ ...partial.bbox, order: 0, role: "stem" }]
+              : [],
+        layout: partial.layout || "unknown",
+        note:
+          partial.archiveNote ||
+          "原图存档；优先四边形/regions 完整框题，禁止跨栏大横条",
       },
       match: {
         answerPageId: partial.answerPageId || null,

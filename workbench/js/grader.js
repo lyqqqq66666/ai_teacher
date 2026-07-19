@@ -225,7 +225,8 @@ window.Grader = (() => {
       q.type.includes("应用");
 
     return {
-      qid: q.id,
+      qid: q.id || q.qid,
+      no: q.no,
       score,
       maxScore: q.maxScore,
       status,
@@ -321,24 +322,129 @@ window.Grader = (() => {
         reason: (s.weakPoints || []).join(" / ") || "得分偏低",
       }));
 
-    const hardQuestions = questionBank.map((q) => {
-      let wrong = 0;
-      list.forEach((s) => {
-        const it = s.items.find((i) => i.qid === q.id);
-        if (it && it.status !== "correct") wrong += 1;
-      });
-      const wrongRate = wrong / list.length;
-      const sample = list
-        .map((s) => s.items.find((i) => i.qid === q.id))
-        .find((i) => i && i.errorType);
-      return {
-        qid: q.id,
-        no: q.no,
-        title: q.stem.slice(0, 24) + (q.stem.length > 24 ? "…" : ""),
-        wrongRate,
-        error: sample?.errorType || "过程不完整",
-      };
-    }).sort((a, b) => b.wrongRate - a.wrongRate).slice(0, 3);
+    const findItem = (s, q) => {
+      if (!s?.items) return null;
+      return (
+        s.items.find((i) => i.qid === q.id || i.qid === q.qid) ||
+        s.items.find((i) => String(i.no) === String(q.no) && q.no != null) ||
+        null
+      );
+    };
+
+    const hardQuestions = questionBank
+      .map((q) => {
+        const stemFull =
+          q.stem ||
+          q.dual?.standard?.stemLatex ||
+          q.stemLatex ||
+          "";
+        let wrong = 0;
+        let partial = 0;
+        let correct = 0;
+        let lostPoints = 0;
+        const studentItems = [];
+        list.forEach((s) => {
+          const it = findItem(s, q);
+          if (!it) return;
+          if (it.status === "correct") correct += 1;
+          else if (it.status === "partial") {
+            partial += 1;
+            wrong += 1;
+          } else {
+            wrong += 1;
+          }
+          const max = it.maxScore || q.maxScore || 0;
+          const score = it.score ?? 0;
+          const lost = Math.max(0, max - score);
+          lostPoints += lost;
+          studentItems.push({
+            studentId: s.studentId,
+            name: s.name,
+            no: s.no,
+            score,
+            maxScore: max,
+            lost,
+            rate: max ? score / max : 0,
+            status: it.status,
+            errorType: it.errorType || null,
+            comment: it.comment || "",
+            ocr: it.ocr || "",
+            steps: it.steps || [],
+            // 用于弹窗左侧原图缩略
+            pageIndex: typeof it.pageIndex === "number" ? it.pageIndex : 0,
+            pages: s.pages || [],
+          });
+        });
+        const wrongRate = list.length ? wrong / list.length : 0;
+        const sample = studentItems.find((i) => i.errorType);
+        // 人话摘要：去掉 $ 定界，截断可读摘要（展示时再用 KaTeX 渲染全文）
+        const summary = summarizeStem(stemFull, q);
+        const dual = q.dual || null;
+        const pagePath =
+          dual?.archive?.pagePath ||
+          q.pagePath ||
+          q.sourceImage ||
+          "";
+        const bbox = dual?.archive?.bbox || q.bbox || null;
+        const quad = dual?.archive?.quad || q.quad || null;
+        const regions = dual?.archive?.regions || q.regions || null;
+        const layout = dual?.archive?.layout || q.layout || "";
+        const maxScore = q.maxScore || dual?.maxScore || 0;
+        return {
+          qid: q.id || q.qid,
+          no: q.no,
+          type: q.type || dual?.type || "",
+          maxScore,
+          knowledge: q.knowledge || dual?.knowledge || [],
+          stem: stemFull,
+          stemLatex: dual?.standard?.stemLatex || q.stemLatex || stemFull,
+          answerLatex:
+            dual?.standard?.answerLatex || q.answerLatex || q.answer || "",
+          options: dual?.standard?.options || q.options || [],
+          steps:
+            dual?.standard?.steps ||
+            (q.rubric || []).map((r) => ({ text: r.step, score: r.score })),
+          title: summary,
+          summary,
+          wrongRate,
+          wrongCount: wrong,
+          partialCount: partial,
+          correctCount: correct,
+          lostPoints,
+          error: sample?.errorType || (wrong ? "过程不完整" : "—"),
+          pagePath,
+          bbox,
+          quad,
+          regions,
+          layout,
+          studentItems,
+        };
+      })
+      // 至少有学生作答明细或失分的题优先；避免空题进榜
+      .filter((q) => q.studentItems.length > 0)
+      .sort((a, b) => b.wrongRate - a.wrongRate || b.lostPoints - a.lostPoints)
+      .slice(0, 8);
+
+    /** 题干人话摘要（避免表格直接塞裸 LaTeX） */
+    function summarizeStem(stem, q) {
+      let t = String(stem || "").trim();
+      if (!t) return `第 ${q.no} 题`;
+      // 去掉定界符，保留可读符号感
+      t = t
+        .replace(/\$\$/g, "")
+        .replace(/\$/g, "")
+        .replace(/\\vec\{([^}]+)\}/g, "→$1")
+        .replace(/\\overrightarrow\{([^}]+)\}/g, "→$1")
+        .replace(/\\dfrac\{([^}]+)\}\{([^}]+)\}/g, "($1)/($2)")
+        .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1)/($2)")
+        .replace(/\\text\{([^}]+)\}/g, "$1")
+        .replace(/\\[a-zA-Z]+/g, "")
+        .replace(/[{}]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (t.length > 28) t = t.slice(0, 28) + "…";
+      return t || `第 ${q.no} 题 · ${q.type || "题目"}`;
+    }
 
     const knMap = {};
     questionBank.forEach((q) => {
@@ -348,8 +454,11 @@ window.Grader = (() => {
     });
     list.forEach((s) => {
       s.items.forEach((it) => {
-        const q = questionBank.find((x) => x.id === it.qid);
+        const q =
+          questionBank.find((x) => x.id === it.qid || x.qid === it.qid) ||
+          questionBank.find((x) => String(x.no) === String(it.no));
         (q?.knowledge || []).forEach((k) => {
+          if (!knMap[k]) knMap[k] = { name: k, ok: 0, all: 0 };
           knMap[k].all += 1;
           if (it.status === "correct") knMap[k].ok += 1;
         });

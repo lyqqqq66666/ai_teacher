@@ -10,7 +10,7 @@
   let memoryTasks = [];
 
   const state = {
-    nav: "grade", // grade | dashboard
+    nav: "grade", // grade | dashboard | models
     gradeTab: "wizard", // wizard | review | tasks
     wizardStep: 1, // 1模式学科 2导入题目 3答案/标准 4确认任务 5上传作业 6批改结果
     draft: null, // current draft task being created
@@ -22,6 +22,13 @@
     processing: false,
     activeClassId: null,
     classModalOpen: false,
+    modelsUi: {
+      remoteModels: [],
+      healthSnap: null,
+      probeBusy: false,
+      lastProbe: null,
+      advancedOpen: false,
+    },
   };
 
   /* ========== 班级 / 名单 ========== */
@@ -445,19 +452,24 @@
   }
 
   function bankOf(id) {
-    // 高中数学：优先用当前草稿的双存档题库（公式字符化结果）
+    // 高中数学：优先全量扫描题库 HS_MATH_DEMO；草稿 dual 仅当题目更多时覆盖
+    if (id === "hs_math" && window.HS_MATH_DEMO && window.MathPipeline) {
+      try {
+        const full = window.MathPipeline.buildDualQuestions(window.HS_MATH_DEMO);
+        const fullBank = window.MathPipeline.toLegacyBank(full);
+        const draftN = state.draft?.dualQuestions?.length || 0;
+        if (draftN > fullBank.length) {
+          return window.MathPipeline.toLegacyBank(state.draft.dualQuestions) || fullBank;
+        }
+        return fullBank;
+      } catch (_) {}
+    }
     if (id === "hs_math" && state.draft?.dualQuestions?.length) {
       return (
         window.MathPipeline?.toLegacyBank(state.draft.dualQuestions) ||
         D.questionBanks.hs_math ||
         []
       );
-    }
-    if (id === "hs_math" && window.HS_MATH_DEMO && window.MathPipeline) {
-      try {
-        const built = window.MathPipeline.buildDualQuestions(window.HS_MATH_DEMO);
-        return window.MathPipeline.toLegacyBank(built);
-      } catch (_) {}
     }
     return D.questionBanks[id] || [];
   }
@@ -527,6 +539,119 @@
     renderLightbox();
   }
 
+  /** 相对页图 0~1 的题目框；展示时略扩边。禁止大 minW 把双栏拉成跨栏横条 */
+  function expandQuestionBBox(bbox, opts = {}) {
+    const QS = window.QuestionSplit;
+    if (QS?.expandBox) return QS.expandBox(bbox, opts);
+    if (!bbox || typeof bbox.x !== "number" || typeof bbox.y !== "number") return null;
+    const w0 = Number(bbox.w);
+    const h0 = Number(bbox.h);
+    if (!(w0 > 0) || !(h0 > 0)) return null;
+    const padX = opts.padX ?? 0.03;
+    const padY = opts.padY ?? 0.03;
+    const minW = opts.minW ?? 0;
+    const minH = opts.minH ?? 0;
+    const cx = bbox.x + w0 / 2;
+    const cy = bbox.y + h0 / 2;
+    let w = Math.min(1, w0 + padX * 2);
+    let h = Math.min(1, h0 + padY * 2);
+    if (minW > 0) w = Math.max(w, Math.min(1, minW));
+    if (minH > 0) h = Math.max(h, Math.min(1, minH));
+    let x = cx - w / 2;
+    let y = cy - h / 2;
+    x = Math.max(0, Math.min(1 - w, x));
+    y = Math.max(0, Math.min(1 - h, y));
+    w = Math.min(w, 1 - x);
+    h = Math.min(h, 1 - y);
+    return { x, y, w, h };
+  }
+
+  /**
+   * 按题目几何裁切：支持四边形 / bbox / 多 regions（跨区竖拼）。
+   * 默认偏完整扩边（题号、末行选项不易被切掉）。
+   */
+  function cropPageToQuestion(src, geoOrBBox, opts = {}) {
+    const QS = window.QuestionSplit;
+    const safeOpts = {
+      padX: opts.padX ?? 0.03,
+      padY: opts.padY ?? 0.03,
+      // 绝不用 0.55 这种会跨栏的 minW
+      minW: opts.minW ?? 0,
+      minH: opts.minH ?? 0,
+      maxEdge: opts.maxEdge || 1600,
+      gap: opts.gap ?? 10,
+    };
+
+    let regions = null;
+    if (geoOrBBox && Array.isArray(geoOrBBox.regions) && geoOrBBox.regions.length) {
+      regions = geoOrBBox.regions;
+    } else if (geoOrBBox && (geoOrBBox.quad || geoOrBBox.points)) {
+      regions = [{ quad: geoOrBBox.quad || geoOrBBox.points, order: 0, role: "stem" }];
+    } else if (geoOrBBox && typeof geoOrBBox.x === "number") {
+      regions = [geoOrBBox];
+    } else if (geoOrBBox && (geoOrBBox.bbox || geoOrBBox.archive || geoOrBBox.quad)) {
+      if (QS?.normalizeQuestionGeometry) {
+        const geo = QS.normalizeQuestionGeometry(
+          geoOrBBox,
+          opts.pageQuestions || null,
+          opts.hints || {}
+        );
+        regions = geo.regions;
+      } else {
+        const b = geoOrBBox.bbox || geoOrBBox.archive?.bbox;
+        const q = geoOrBBox.quad || geoOrBBox.archive?.quad;
+        regions = q ? [{ quad: q }] : b ? [b] : null;
+      }
+    }
+    if (!src || !regions?.length) return Promise.resolve(null);
+
+    if (QS?.cropQuestionRegions) {
+      return QS.cropQuestionRegions(src, regions, safeOpts);
+    }
+    // fallback 单框
+    const region = expandQuestionBBox(regions[0], safeOpts);
+    if (!region) return Promise.resolve(null);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const nw = img.naturalWidth || img.width;
+          const nh = img.naturalHeight || img.height;
+          if (!nw || !nh) {
+            resolve(null);
+            return;
+          }
+          let sx = Math.floor(region.x * nw);
+          let sy = Math.floor(region.y * nh);
+          let sw = Math.max(1, Math.ceil(region.w * nw));
+          let sh = Math.max(1, Math.ceil(region.h * nh));
+          if (sx + sw > nw) sw = nw - sx;
+          if (sy + sh > nh) sh = nh - sy;
+          const maxEdge = safeOpts.maxEdge;
+          const scale = Math.min(1, maxEdge / Math.max(sw, sh));
+          const cw = Math.max(1, Math.round(sw * scale));
+          const ch = Math.max(1, Math.round(sh * scale));
+          const canvas = document.createElement("canvas");
+          canvas.width = cw;
+          canvas.height = ch;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(null);
+            return;
+          }
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+          resolve(canvas.toDataURL("image/jpeg", 0.92));
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
   function renderLightbox() {
     const root = $("#lightbox-root");
     if (!state.lightbox.open) {
@@ -536,6 +661,8 @@
     const { list, index, title } = state.lightbox;
     const item = list[index];
     const src = typeof item === "string" ? item : item.src;
+    const rawBBox = typeof item === "object" && item ? item.bbox : null;
+    const hasCrop = !!(rawBBox && typeof rawBBox.x === "number");
     root.innerHTML = `
       <div class="lightbox">
         <div class="lightbox-backdrop" data-close="1"></div>
@@ -551,7 +678,14 @@
               <button type="button" class="btn" data-lb="close">关闭</button>
             </div>
           </div>
-          <div class="lightbox-stage"><img src="${src}" alt="preview" /></div>
+          <div class="lightbox-stage">
+            <img id="lb-stage-img" src="${escapeHtml(src)}" alt="preview" />
+            ${
+              hasCrop
+                ? `<p class="lightbox-crop-hint" id="lb-crop-hint">正在按本题区域裁切…</p>`
+                : ""
+            }
+          </div>
         </div>
       </div>`;
     root.querySelector("[data-close]").onclick = () => {
@@ -570,6 +704,31 @@
       state.lightbox.index = (index + 1) % list.length;
       renderLightbox();
     };
+    if (hasCrop) {
+      const geo =
+        typeof item === "object" && item
+          ? {
+              bbox: rawBBox,
+              quad: item.quad || null,
+              regions: item.regions || null,
+            }
+          : rawBBox;
+      cropPageToQuestion(src, geo, {
+        padX: 0.03,
+        padY: 0.03,
+        maxEdge: 1800,
+      }).then((dataUrl) => {
+        if (!state.lightbox.open) return;
+        const imgEl = root.querySelector("#lb-stage-img");
+        const hint = root.querySelector("#lb-crop-hint");
+        if (dataUrl && imgEl) {
+          imgEl.src = dataUrl;
+          if (hint) hint.textContent = "已按本题框选区域裁切 · 同页多题时只看当前题";
+        } else if (hint) {
+          hint.textContent = "裁切失败，已显示整页";
+        }
+      });
+    }
   }
 
   function thumbGrid(images, opts = {}) {
@@ -667,7 +826,9 @@
   }
 
   function setNav(nav, gradeTab) {
-    state.nav = nav === "dashboard" ? "dashboard" : "grade";
+    if (nav === "dashboard") state.nav = "dashboard";
+    else if (nav === "models") state.nav = "models";
+    else state.nav = "grade";
     if (gradeTab) state.gradeTab = gradeTab;
 
     $$(".side-nav button[data-nav]").forEach((b) => {
@@ -682,6 +843,16 @@
       updatePills();
       updateClassSwitcher();
       renderDashboard();
+      return;
+    }
+
+    if (state.nav === "models") {
+      $("#panel-models")?.classList.add("active");
+      $("#page-title").textContent = "识别服务";
+      $("#page-sub").textContent = "识别作业图、名单用的 AI。一般保持推荐即可，不用改技术参数。";
+      updatePills();
+      updateClassSwitcher();
+      renderModelsPanel();
       return;
     }
 
@@ -722,6 +893,8 @@
       samples: ["grade", "wizard"],
       grade: ["grade", state.gradeTab || "wizard"],
       dashboard: ["dashboard", null],
+      models: ["models", null],
+      "model-center": ["models", null],
     };
     const [nav, tab] = map[name] || ["grade", "wizard"];
     setNav(nav, tab || undefined);
@@ -729,6 +902,415 @@
 
   function renderDashboard() {
     renderAnalyticsInto($("#dashboard-body"));
+  }
+
+  /* ========== 识别服务：老师友好主界面 + 高级折叠 ========== */
+  const VL_PRESETS = [
+    { id: "accurate", model: "qwen-vl-max", title: "更准（推荐）", desc: "名单、题干识别更稳" },
+    { id: "fast", model: "qwen-vl-plus", title: "更快", desc: "速度优先，略可能漏识" },
+  ];
+  const TEXT_PRESETS = [
+    { id: "balanced", model: "qwen-plus", title: "推荐", desc: "判分、制答日常够用" },
+    { id: "strong", model: "qwen-max", title: "更强", desc: "难题、长过程更稳" },
+  ];
+
+  function kindLabel(kind) {
+    const map = {
+      health: "服务检查",
+      models: "模型列表",
+      roster: "识别名单",
+      page: "识别题干",
+      chat: "文字分析",
+      other: "其它",
+    };
+    return map[kind] || kind || "—";
+  }
+
+  function fmtMs(ms) {
+    if (ms == null || Number.isNaN(ms)) return "—";
+    if (ms < 1000) return `${ms} 毫秒`;
+    return `${(ms / 1000).toFixed(1)} 秒`;
+  }
+
+  function fmtMsShort(ms) {
+    if (ms == null || Number.isNaN(ms)) return "—";
+    if (ms < 1000) return `约 ${ms} 毫秒`;
+    return `约 ${(ms / 1000).toFixed(1)} 秒`;
+  }
+
+  function fmtTime(ts) {
+    if (!ts) return "—";
+    try {
+      return new Date(ts).toLocaleString("zh-CN", {
+        hour12: false,
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (_) {
+      return String(ts);
+    }
+  }
+
+  function matchPreset(list, modelId, fallbackId) {
+    const hit = list.find((p) => p.model === modelId);
+    return hit || list.find((p) => p.id === fallbackId) || list[0];
+  }
+
+  function serviceStatusText(health) {
+    if (!health) return { label: "尚未检测", tone: "warn", hint: "点右侧按钮测一下" };
+    if (health.ok === false)
+      return {
+        label: "未连接",
+        tone: "bad",
+        hint: "请让技术同学启动本机识别服务",
+      };
+    if (health.configured)
+      return { label: "已连接", tone: "ok", hint: "可以正常改作业" };
+    return { label: "未就绪", tone: "warn", hint: "服务在，但密钥未配置" };
+  }
+
+  function summaryLine(stats, status) {
+    const parts = [`识别服务：${status.label}`];
+    if (stats.total) {
+      if (stats.fail === 0) parts.push(`最近 ${stats.total} 次全部成功`);
+      else parts.push(`最近 ${stats.total} 次 · 成功 ${stats.ok} · 失败 ${stats.fail}`);
+      if (stats.avgMs) parts.push(fmtMsShort(stats.avgMs));
+    } else {
+      parts.push("还没有识别记录");
+    }
+    return parts.join(" · ");
+  }
+
+  function friendlyActivityLabel(e) {
+    if (e.label) return e.label;
+    return kindLabel(e.kind);
+  }
+
+  function renderModelsPanel() {
+    const root = $("#models-body");
+    if (!root) return;
+    const AI = window.AIClient;
+    if (!AI) {
+      root.innerHTML = `<div class="card"><div class="card-bd">识别服务组件未加载</div></div>`;
+      return;
+    }
+
+    const stats = AI.analyzeLog();
+    const base = AI.getBase();
+    const vl = AI.getVlModel();
+    const text = AI.getTextModel();
+    const health = state.modelsUi.healthSnap || AI.getLastHealth();
+    const status = serviceStatusText(health);
+    const vlPreset = matchPreset(VL_PRESETS, vl, "accurate");
+    const textPreset = matchPreset(TEXT_PRESETS, text, "balanced");
+    const vlIsCustom = !VL_PRESETS.some((p) => p.model === vl);
+    const textIsCustom = !TEXT_PRESETS.some((p) => p.model === text);
+    const recent = (AI.getLog() || [])
+      .filter((e) => e.kind !== "health" && e.kind !== "models")
+      .slice(0, 5);
+    const advancedOpen = !!state.modelsUi.advancedOpen;
+    const probeMsg =
+      state.modelsUi.lastProbe ||
+      (status.tone === "ok"
+        ? "识别服务正常，可以改作业了。"
+        : "点「测试是否可用」检查一下。");
+
+    root.innerHTML = `
+      <div class="models-layout models-friendly">
+        <div class="svc-hero card">
+          <div class="svc-hero-main">
+            <div class="svc-status-pill ${status.tone}">
+              <span class="svc-dot"></span>
+              <span>${escapeHtml(status.label)}</span>
+            </div>
+            <p class="svc-summary">${escapeHtml(summaryLine(stats, status))}</p>
+            <p class="svc-hint muted">${escapeHtml(status.hint)}</p>
+            ${
+              state.modelsUi.lastProbe
+                ? `<p class="svc-probe-msg ${
+                    /失败|未|错误|异常|连不上/.test(state.modelsUi.lastProbe) ? "bad" : "ok"
+                  }">${escapeHtml(probeMsg)}</p>`
+                : ""
+            }
+          </div>
+          <div class="svc-hero-actions">
+            <button type="button" class="btn primary" id="btn-models-probe" ${
+              state.modelsUi.probeBusy ? "disabled" : ""
+            }>${state.modelsUi.probeBusy ? "测试中…" : "测试是否可用"}</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd"><h3>识别能力</h3></div>
+          <div class="card-bd">
+            <p class="svc-section-lead muted">一般保持推荐即可。名单、题干走「看图」；判分、制答走「文字」。</p>
+
+            <div class="svc-capability">
+              <div class="svc-cap-label">
+                <strong>看图识别</strong>
+                <span class="muted">名单、题干框</span>
+              </div>
+              <div class="svc-option-row" role="radiogroup" aria-label="看图识别">
+                ${VL_PRESETS.map(
+                  (p) => `
+                  <button type="button" class="svc-option ${
+                    vlPreset.id === p.id && !vlIsCustom ? "active" : ""
+                  }" data-set-vl="${escapeHtml(p.model)}">
+                    <span class="svc-option-title">${escapeHtml(p.title)}</span>
+                    <span class="svc-option-desc">${escapeHtml(p.desc)}</span>
+                  </button>`
+                ).join("")}
+              </div>
+              ${
+                vlIsCustom
+                  ? `<p class="svc-custom-note muted">当前为自定义看图模型（高级设置里可改）</p>`
+                  : ""
+              }
+            </div>
+
+            <div class="svc-capability">
+              <div class="svc-cap-label">
+                <strong>文字分析</strong>
+                <span class="muted">判分、制答、对话</span>
+              </div>
+              <div class="svc-option-row" role="radiogroup" aria-label="文字分析">
+                ${TEXT_PRESETS.map(
+                  (p) => `
+                  <button type="button" class="svc-option ${
+                    textPreset.id === p.id && !textIsCustom ? "active" : ""
+                  }" data-set-text="${escapeHtml(p.model)}">
+                    <span class="svc-option-title">${escapeHtml(p.title)}</span>
+                    <span class="svc-option-desc">${escapeHtml(p.desc)}</span>
+                  </button>`
+                ).join("")}
+              </div>
+              ${
+                textIsCustom
+                  ? `<p class="svc-custom-note muted">当前为自定义文字模型（高级设置里可改）</p>`
+                  : ""
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd"><h3>最近记录</h3></div>
+          <div class="card-bd">
+            ${
+              recent.length
+                ? `<ul class="svc-activity">
+                    ${recent
+                      .map(
+                        (e) => `
+                      <li class="${e.ok ? "ok" : "fail"}">
+                        <span class="svc-act-time">${fmtTime(e.ts)}</span>
+                        <span class="svc-act-what">${escapeHtml(friendlyActivityLabel(e))}</span>
+                        <span class="svc-act-result">${e.ok ? "成功" : "失败"}</span>
+                        <span class="svc-act-ms muted">${fmtMsShort(e.ms)}</span>
+                      </li>`
+                      )
+                      .join("")}
+                  </ul>`
+                : `<div class="models-empty">还没有记录。测试服务，或在「改作业」里识别名单/题干后会出现在这里。</div>`
+            }
+          </div>
+        </div>
+
+        <details class="card svc-advanced" id="svc-advanced" ${advancedOpen ? "open" : ""}>
+          <summary class="svc-advanced-sum">高级设置（技术）</summary>
+          <div class="card-bd svc-advanced-body">
+            <p class="field-hint" style="margin:0 0 14px">
+              以下内容给开发/演示调试用。密钥只在本机 proxy 的 .env，不会进浏览器。
+            </p>
+            <div class="models-form-row">
+              <label for="inp-proxy-base">本机代理地址</label>
+              <input id="inp-proxy-base" type="text" value="${escapeHtml(base)}" placeholder="http://127.0.0.1:8787" />
+            </div>
+            <div class="models-form-row">
+              <label for="sel-vl-model">看图模型 ID</label>
+              <input id="sel-vl-model" type="text" value="${escapeHtml(vl)}" />
+            </div>
+            <div class="models-form-row">
+              <label for="sel-text-model">文字模型 ID</label>
+              <input id="sel-text-model" type="text" value="${escapeHtml(text)}" />
+            </div>
+            <div class="models-actions">
+              <button type="button" class="btn primary" id="btn-models-save">保存</button>
+              <button type="button" class="btn" id="btn-models-reset">恢复推荐默认</button>
+              <button type="button" class="btn" id="btn-models-refresh-health">刷新状态</button>
+              <button type="button" class="btn" id="btn-models-list">拉取可用模型</button>
+              <button type="button" class="btn" id="btn-models-export-log">导出日志</button>
+              <button type="button" class="btn" id="btn-models-clear-log">清空记录</button>
+            </div>
+            <div class="models-health-box ${
+              health?.configured ? "ok" : health ? "bad" : ""
+            }" id="models-health-box">${formatHealthSnap(health)}</div>
+            ${
+              (state.modelsUi.remoteModels || []).length
+                ? `<p class="field-hint" style="margin-top:10px">已拉取 ${
+                    state.modelsUi.remoteModels.length
+                  } 个模型 ID（可在上方输入框手填）。</p>`
+                : ""
+            }
+          </div>
+        </details>
+      </div>
+    `;
+
+    bindModelsPanel(root);
+  }
+
+  function formatHealthSnap(h) {
+    if (!h) return "尚未刷新。启动：python3 server/proxy.py";
+    const lines = [
+      `ok=${h.ok}  configured=${h.configured}`,
+      `service=${h.service || "—"}`,
+      `host=${h.baseUrlHost || "—"}`,
+      `vlModel=${h.vlModel || "—"}  textModel=${h.textModel || "—"}`,
+      h.at ? `checkedAt=${fmtTime(h.at)}` : "",
+      h.error ? `error=${h.error}` : "",
+    ].filter(Boolean);
+    return lines.join("\n");
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function bindModelsPanel(root) {
+    const AI = window.AIClient;
+    if (!AI || !root) return;
+
+    const adv = root.querySelector("#svc-advanced");
+    if (adv) {
+      adv.addEventListener("toggle", () => {
+        state.modelsUi.advancedOpen = adv.open;
+      });
+    }
+
+    root.querySelectorAll("[data-set-vl]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        AI.setVlModel(btn.getAttribute("data-set-vl"));
+        toast("已切换看图识别");
+        renderModelsPanel();
+      });
+    });
+    root.querySelectorAll("[data-set-text]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        AI.setTextModel(btn.getAttribute("data-set-text"));
+        toast("已切换文字分析");
+        renderModelsPanel();
+      });
+    });
+
+    root.querySelector("#btn-models-save")?.addEventListener("click", () => {
+      const base = root.querySelector("#inp-proxy-base")?.value?.trim();
+      const vl = root.querySelector("#sel-vl-model")?.value?.trim();
+      const text = root.querySelector("#sel-text-model")?.value?.trim();
+      if (base) AI.setBase(base);
+      if (vl) AI.setVlModel(vl);
+      if (text) AI.setTextModel(text);
+      toast("已保存");
+      refreshAiStatus();
+      renderModelsPanel();
+    });
+
+    root.querySelector("#btn-models-reset")?.addEventListener("click", () => {
+      AI.setBase(AI.DEFAULT_BASE);
+      AI.setVlModel(AI.DEFAULT_VL);
+      AI.setTextModel(AI.DEFAULT_TEXT);
+      toast("已恢复推荐默认");
+      refreshAiStatus();
+      renderModelsPanel();
+    });
+
+    root.querySelector("#btn-models-refresh-health")?.addEventListener("click", async () => {
+      try {
+        const h = await AI.health();
+        state.modelsUi.healthSnap = { ...h, at: Date.now() };
+        toast(h.configured ? "识别服务已连接" : "服务在，但密钥未配置");
+      } catch (e) {
+        state.modelsUi.healthSnap = {
+          ok: false,
+          configured: false,
+          error: e.message,
+          at: Date.now(),
+        };
+        toast("未连接：" + (e.message || e));
+      }
+      refreshAiStatus();
+      renderModelsPanel();
+    });
+
+    root.querySelector("#btn-models-list")?.addEventListener("click", async () => {
+      toast("正在拉取…");
+      try {
+        const data = await AI.listModels();
+        state.modelsUi.remoteModels = data.models || [];
+        toast(`已拉取 ${state.modelsUi.remoteModels.length} 个模型`);
+      } catch (e) {
+        toast("拉取失败：" + (e.message || e));
+      }
+      renderModelsPanel();
+    });
+
+    root.querySelector("#btn-models-probe")?.addEventListener("click", async () => {
+      if (state.modelsUi.probeBusy) return;
+      state.modelsUi.probeBusy = true;
+      renderModelsPanel();
+      toast("正在测试…");
+      try {
+        const r = await AI.probe({ listModels: false, pingChat: true });
+        if (r.health) state.modelsUi.healthSnap = { ...r.health, at: Date.now() };
+        if (r.errors?.length) {
+          const first = r.errors[0];
+          state.modelsUi.lastProbe =
+            first.step === "health"
+              ? "还连不上。请让技术同学启动本机识别服务（python3 server/proxy.py）。"
+              : `测试未通过：${first.error}`;
+          toast("测试未通过");
+        } else if (r.health && !r.health.configured) {
+          state.modelsUi.lastProbe = "服务能连上，但密钥未配置，请检查本机 .env。";
+          toast("密钥未配置");
+        } else {
+          state.modelsUi.lastProbe = "识别服务正常，可以改作业了。";
+          toast("识别服务正常");
+        }
+      } catch (e) {
+        state.modelsUi.lastProbe =
+          "还连不上。请让技术同学启动本机识别服务（python3 server/proxy.py）。";
+        toast("测试失败");
+      } finally {
+        state.modelsUi.probeBusy = false;
+        refreshAiStatus();
+        renderModelsPanel();
+      }
+    });
+
+    root.querySelector("#btn-models-clear-log")?.addEventListener("click", () => {
+      if (!confirm("确定清空本机识别记录？")) return;
+      AI.clearLog();
+      toast("记录已清空");
+      renderModelsPanel();
+    });
+
+    root.querySelector("#btn-models-export-log")?.addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(AI.getLog(), null, 2)], {
+        type: "application/json",
+      });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `seewo-pi-ai-log-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast("已导出");
+    });
   }
 
   async function quickDemo(subjectId, mode) {
@@ -1088,7 +1670,7 @@
 
           <div class="math-cap-panel" id="math-cap-bbox">
             <div class="section-label-row mt-12">
-              <div class="small muted">点选框选区域或题号列表，联动高亮</div>
+              <div class="small muted">点选左侧题号：右侧按本题 bbox 裁切显示（同页多题不塞整页）</div>
             </div>
             <div class="math-bbox-layout mt-8">
               <div class="math-q-list">
@@ -1108,9 +1690,13 @@
                   .join("")}
               </div>
               <div class="math-bbox-stage" id="math-bbox-stage">
-                ${examPages
-                  .map((p) => MP.renderPageWithBBoxes(p, questions, activeQid))
-                  .join("") || `<div class="empty-hint">无检测页</div>`}
+                ${
+                  MP.renderActiveQuestionCrop
+                    ? MP.renderActiveQuestionCrop(activeQ, examPages, questions)
+                    : examPages
+                        .map((p) => MP.renderPageWithBBoxes(p, questions, activeQid))
+                        .join("") || `<div class="empty-hint">无检测页</div>`
+                }
               </div>
             </div>
           </div>
@@ -1220,15 +1806,71 @@
       });
     }
 
+    function bindBBoxHits() {
+      $$(".bbox-hit", root).forEach((b) => {
+        b.onclick = () => selectQ(b.dataset.qid);
+      });
+    }
+
+    /** 用 canvas 真实裁切替换 CSS 预览；支持双栏单块 / 多 region 竖拼 */
+    function enhanceActiveCrop(q) {
+      const stage = root.querySelector("#math-bbox-stage");
+      if (!stage || !q) return;
+      const img = stage.querySelector(".q-crop-img");
+      const src =
+        q.archive?.pagePath ||
+        q.pagePath ||
+        img?.getAttribute("data-crop-src") ||
+        img?.getAttribute("src");
+      if (!img || !src || typeof cropPageToQuestion !== "function") return;
+      const pageId = q.archive?.pageId || q.pageId;
+      const pageQs = (questions || []).filter(
+        (x) => (x.archive?.pageId || x.pageId) === pageId
+      );
+      cropPageToQuestion(src, q, {
+        padX: 0.03,
+        padY: 0.03,
+        maxEdge: 1400,
+        pageQuestions: pageQs,
+        hints: {
+          twoColumn:
+            pageQs.length >= 8 ||
+            q.archive?.layout === "two_col" ||
+            pageQs.some((x) => x.archive?.layout === "two_col"),
+        },
+      }).then((dataUrl) => {
+        if (!dataUrl || state.activeMathQid !== q.qid) return;
+        const el = root.querySelector(".q-crop-img");
+        const vp = root.querySelector(".q-crop-viewport");
+        if (!el) return;
+        el.src = dataUrl;
+        el.removeAttribute("style");
+        el.classList.add("q-crop-img-ready");
+        if (vp) {
+          vp.style.paddingBottom = "0";
+          vp.classList.add("q-crop-viewport-ready");
+        }
+      });
+    }
+
     function selectQ(qid) {
       state.activeMathQid = qid;
-      // 刷新框选 active 态与列表
+      // 刷新左侧列表高亮
       $$(".math-q-item", root).forEach((b) =>
         b.classList.toggle("active", b.dataset.qid === qid)
       );
-      $$(".bbox-hit", root).forEach((b) =>
-        b.classList.toggle("active", b.dataset.qid === qid)
-      );
+      // ① 框选：右侧按当前题 bbox 重绘裁切预览
+      const stage = root.querySelector("#math-bbox-stage");
+      const q = questions.find((x) => x.qid === qid) || questions[0];
+      if (stage && MP.renderActiveQuestionCrop && q) {
+        stage.innerHTML = MP.renderActiveQuestionCrop(q, examPages, questions);
+        bindBBoxHits();
+        enhanceActiveCrop(q);
+      } else {
+        $$(".bbox-hit", root).forEach((b) =>
+          b.classList.toggle("active", b.dataset.qid === qid)
+        );
+      }
       const capChar = root.querySelector("#math-cap-char");
       if (capChar && !capChar.classList.contains("hidden")) mountActiveDual();
     }
@@ -1239,9 +1881,9 @@
     $$(".math-q-item", root).forEach((b) => {
       b.onclick = () => selectQ(b.dataset.qid);
     });
-    $$(".bbox-hit", root).forEach((b) => {
-      b.onclick = () => selectQ(b.dataset.qid);
-    });
+    bindBBoxHits();
+    // 首次进入也做真实裁切
+    if (activeQ) enhanceActiveCrop(activeQ);
 
     const btnConfirm = root.querySelector("#btn-confirm-q");
     if (btnConfirm) {
@@ -2658,10 +3300,32 @@
   }
 
   /* ========== ANALYTICS / DASHBOARD ========== */
+  function renderStemPreview(stemOrLatex) {
+    const MF = window.MathFormat;
+    const raw = String(stemOrLatex || "").trim();
+    if (!raw) return "—";
+    if (MF?.renderMathText) return MF.renderMathText(raw);
+    return escapeHtml(raw);
+  }
+
+  function hardQuestionRowHTML(q) {
+    const rate = Math.round((q.wrongRate || 0) * 100);
+    const stemHtml = renderStemPreview(q.stemLatex || q.stem || q.summary || q.title);
+    return `<tr class="hq-row" data-qid="${escapeHtml(q.qid)}">
+      <td class="hq-no">${escapeHtml(String(q.no))}</td>
+      <td class="hq-stem">
+        <div class="hq-stem-math">${stemHtml}</div>
+        <button type="button" class="btn-link hq-view-btn" data-view-q="${escapeHtml(q.qid)}">查看题目</button>
+      </td>
+      <td>${rate}%</td>
+      <td>${escapeHtml(q.error || "—")}</td>
+    </tr>`;
+  }
+
   function buildAnalyticsHTML(task, a) {
     return `
       <div class="stat-row">
-        <div class="stat"><div class="label">班级</div><div class="value" style="font-size:18px">${task.className || "—"}</div></div>
+        <div class="stat"><div class="label">班级</div><div class="value" style="font-size:18px">${escapeHtml(task.className || "—")}</div></div>
         <div class="stat"><div class="label">班级均分</div><div class="value">${a.avgScore}</div></div>
         <div class="stat"><div class="label">得分率</div><div class="value">${Math.round(a.avgRate * 100)}%</div></div>
         <div class="stat"><div class="label">需优先关注</div><div class="value">${a.focusStudents.length}</div></div>
@@ -2674,7 +3338,7 @@
               .map(
                 (k) => `
               <div class="bar-row">
-                <div>${k.name}</div>
+                <div>${escapeHtml(k.name)}</div>
                 <div class="bar-track"><div class="bar-fill" style="width:${Math.round(k.mastery * 100)}%"></div></div>
                 <div>${Math.round(k.mastery * 100)}%</div>
               </div>`
@@ -2689,7 +3353,10 @@
               <thead><tr><th>学生</th><th>得分</th><th>原因</th></tr></thead>
               <tbody>
                 ${a.focusStudents
-                  .map((s) => `<tr><td>${s.name}</td><td>${s.score ?? "—"}</td><td>${s.reason}</td></tr>`)
+                  .map(
+                    (s) =>
+                      `<tr><td>${escapeHtml(s.name)}</td><td>${s.score ?? "—"}</td><td>${escapeHtml(s.reason)}</td></tr>`
+                  )
                   .join("")}
               </tbody>
             </table>
@@ -2698,27 +3365,27 @@
       </div>
       <div class="grid-2 mt-16">
         <div class="card">
-          <div class="card-hd"><h3>高失分题</h3></div>
+          <div class="card-hd">
+            <h3>高失分题</h3>
+            <span class="small muted">点击「查看题目」看规格化题干与学情</span>
+          </div>
           <div class="card-bd">
-            <table class="table">
+            <table class="table hq-table">
               <thead><tr><th>题号</th><th>题目</th><th>失分率</th><th>主错因</th></tr></thead>
               <tbody>
-                ${a.hardQuestions
-                  .map(
-                    (q) =>
-                      `<tr><td>${q.no}</td><td>${q.title}</td><td>${Math.round(q.wrongRate * 100)}%</td><td>${q.error}</td></tr>`
-                  )
-                  .join("")}
+                ${(a.hardQuestions || []).map((q) => hardQuestionRowHTML(q)).join("")}
               </tbody>
             </table>
-            <div class="tags mt-12">${(a.commonErrors || []).map((e) => `<span class="tag">${e}</span>`).join("")}</div>
+            <div class="tags mt-12">${(a.commonErrors || [])
+              .map((e) => `<span class="tag">${escapeHtml(e)}</span>`)
+              .join("")}</div>
           </div>
         </div>
         <div class="card">
           <div class="card-hd"><h3>讲评建议</h3></div>
           <div class="card-bd">
             <ol style="margin:0;padding-left:18px;line-height:1.7">
-              ${(a.teachingAdvice || []).map((t) => `<li>${t}</li>`).join("")}
+              ${(a.teachingAdvice || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("")}
             </ol>
           </div>
         </div>
@@ -2732,12 +3399,289 @@
           </div>
         </div>
         <div class="card-bd">
-          <div class="feishu-box"><pre id="feishu-summary">${a.feishuSummary}</pre></div>
+          <div class="feishu-box"><pre id="feishu-summary">${escapeHtml(a.feishuSummary)}</pre></div>
         </div>
       </div>`;
   }
 
-  function bindAnalyticsActions(root, a) {
+  function statusRank(status) {
+    if (status === "wrong") return 0;
+    if (status === "partial") return 1;
+    return 2;
+  }
+
+  function statusLabel(status) {
+    if (status === "correct") return "答得好";
+    if (status === "partial") return "得分还行";
+    return "丢分较高";
+  }
+
+  function statusClass(status) {
+    if (status === "correct") return "ok";
+    if (status === "partial") return "partial";
+    return "bad";
+  }
+
+  function resolveQPageSrc(q, task) {
+    // 优先题目页 / 卷面原图路径
+    if (q.pagePath) {
+      const p = q.pagePath.startsWith("public/") || q.pagePath.startsWith("http")
+        ? q.pagePath
+        : q.pagePath;
+      return p;
+    }
+    const pages = task?.questionPages || [];
+    if (pages[0]) {
+      const src = pages[0].src || pages[0];
+      if (typeof src === "string") return src;
+    }
+    // 从任意学生页兜底
+    const items = q.studentItems || [];
+    for (const it of items) {
+      const pi = it.pageIndex || 0;
+      const src = it.pages?.[pi] || it.pages?.[0];
+      if (src) return typeof src === "string" ? src : src.src;
+    }
+    return "";
+  }
+
+  function openQuestionInsightModal(task, a, qid) {
+    const q = (a.hardQuestions || []).find((x) => x.qid === qid);
+    if (!q) {
+      toast("未找到该题详情");
+      return;
+    }
+    const MF = window.MathFormat;
+    const stemHtml = MF?.renderMathText
+      ? MF.renderMathText(q.stemLatex || q.stem || "")
+      : escapeHtml(q.stem || q.summary || "");
+    const ansHtml = MF?.renderMathText
+      ? MF.renderMathText(q.answerLatex || "")
+      : escapeHtml(q.answerLatex || "");
+    const optsHtml = (q.options || [])
+      .map((o) => {
+        const body = MF?.renderMathText
+          ? MF.renderMathText(o.latex || o.text || "")
+          : escapeHtml(o.latex || o.text || "");
+        return `<div class="qi-opt"><span class="qi-opt-key">${escapeHtml(
+          o.key || ""
+        )}</span>${body}</div>`;
+      })
+      .join("");
+    const stepsHtml = (q.steps || [])
+      .map(
+        (s, i) =>
+          `<li>${escapeHtml(s.text || s.step || `步骤 ${i + 1}`)}${
+            s.score != null ? ` <span class="muted">（${s.score} 分）</span>` : ""
+          }</li>`
+      )
+      .join("");
+
+    const students = (q.studentItems || [])
+      .slice()
+      .sort((a, b) => {
+        const r = statusRank(a.status) - statusRank(b.status);
+        if (r !== 0) return r;
+        // 丢分高的更靠前；同分则得分低靠前
+        if (b.lost !== a.lost) return b.lost - a.lost;
+        return a.rate - b.rate;
+      });
+
+    const groups = [
+      { key: "wrong", title: "丢分较高", list: students.filter((s) => s.status === "wrong") },
+      { key: "partial", title: "得分还行", list: students.filter((s) => s.status === "partial") },
+      { key: "correct", title: "答得好", list: students.filter((s) => s.status === "correct") },
+    ];
+
+    const n = Math.max(1, (q.studentItems || []).length);
+    const wrongPct = Math.round((q.wrongRate || 0) * 100);
+    const okPct = Math.round(((q.correctCount || 0) / n) * 100);
+    const partialPct = Math.round(((q.partialCount || 0) / n) * 100);
+    const pageSrc = resolveQPageSrc(q, task);
+    const qBBox =
+      q.bbox && typeof q.bbox.x === "number"
+        ? q.bbox
+        : null;
+
+    const root = $("#modal-root");
+    if (!root) return;
+    root.innerHTML = `
+      <div class="modal-overlay" id="qi-modal">
+        <div class="modal-panel qi-modal" role="dialog" aria-modal="true" aria-label="题目详情">
+          <div class="modal-hd">
+            <div>
+              <h3 style="margin:0">第 ${escapeHtml(String(q.no))} 题 · 规格化题干</h3>
+              <p class="small muted" style="margin:4px 0 0">
+                ${escapeHtml(q.type || "题目")}
+                ${
+                  (q.knowledge || []).length
+                    ? " · " + q.knowledge.map((k) => escapeHtml(k)).join("、")
+                    : ""
+                }
+                · 失分率 ${wrongPct}%
+              </p>
+            </div>
+            <button type="button" class="btn" id="btn-qi-close">关闭</button>
+          </div>
+          <div class="qi-body">
+            <div class="qi-left">
+              <div class="qi-thumb-wrap">
+                ${
+                  pageSrc
+                    ? `<button type="button" class="qi-thumb-btn" id="qi-thumb-open" title="点击放大本题区域" aria-label="放大查看本题区域">
+                        <img class="qi-thumb" id="qi-thumb-img" src="${escapeHtml(
+                          pageSrc
+                        )}" alt="第 ${escapeHtml(String(q.no))} 题区域" />
+                        <span class="qi-thumb-zoom">点击放大</span>
+                      </button>`
+                    : `<div class="qi-thumb qi-thumb-empty">暂无原图</div>`
+                }
+                <span class="qi-thumb-cap" id="qi-thumb-cap">${
+                  qBBox ? "本题区域（裁切中…）" : "原图缩略"
+                }</span>
+              </div>
+              <div class="qi-analysis card-like">
+                <h4>本题答题情况</h4>
+                <div class="qi-metrics">
+                  <div><span class="muted">满分</span><strong>${q.maxScore || "—"}</strong></div>
+                  <div><span class="muted">失分率</span><strong class="bad-t">${wrongPct}%</strong></div>
+                  <div><span class="muted">答对</span><strong class="ok-t">${okPct}%</strong></div>
+                  <div><span class="muted">部分对</span><strong>${partialPct}%</strong></div>
+                </div>
+                <p class="qi-error-line">主错因：<strong>${escapeHtml(q.error || "—")}</strong></p>
+                <div class="qi-bars">
+                  <div class="qi-bar-row">
+                    <span>丢分较高</span>
+                    <div class="bar-track"><div class="bar-fill bad" style="width:${wrongPct}%"></div></div>
+                    <span>${q.wrongCount || 0} 人</span>
+                  </div>
+                  <div class="qi-bar-row">
+                    <span>得分还行</span>
+                    <div class="bar-track"><div class="bar-fill partial" style="width:${partialPct}%"></div></div>
+                    <span>${q.partialCount || 0} 人</span>
+                  </div>
+                  <div class="qi-bar-row">
+                    <span>答得好</span>
+                    <div class="bar-track"><div class="bar-fill ok" style="width:${okPct}%"></div></div>
+                    <span>${q.correctCount || 0} 人</span>
+                  </div>
+                </div>
+                <p class="small muted" style="margin:12px 0 0">讲评时可优先看右侧「丢分较高」例题，再对照规格化题干统一口径。</p>
+              </div>
+            </div>
+            <div class="qi-right">
+              <div class="qi-stem-card">
+                <div class="qi-stem-label">规格化文本（人类可读）</div>
+                <div class="qi-stem-math">${stemHtml}</div>
+                ${optsHtml ? `<div class="qi-opts">${optsHtml}</div>` : ""}
+                ${
+                  ansHtml
+                    ? `<div class="qi-ans"><span class="muted">参考答案</span><div>${ansHtml}</div></div>`
+                    : ""
+                }
+                ${
+                  stepsHtml
+                    ? `<div class="qi-steps"><span class="muted">评分要点</span><ol>${stepsHtml}</ol></div>`
+                    : ""
+                }
+              </div>
+              <div class="qi-examples">
+                <h4>学生作答例（按丢分 → 还行 → 答得好）</h4>
+                ${groups
+                  .map((g) => {
+                    if (!g.list.length) return "";
+                    return `<div class="qi-group">
+                      <div class="qi-group-hd">${escapeHtml(g.title)} · ${g.list.length} 人</div>
+                      <ul class="qi-stu-list">
+                        ${g.list
+                          .map(
+                            (s) => `<li class="qi-stu ${statusClass(s.status)}">
+                              <div class="qi-stu-top">
+                                <strong>${escapeHtml(s.name)}</strong>
+                                <span class="qi-stu-score">${s.score}/${s.maxScore}</span>
+                                <span class="qi-stu-tag">${statusLabel(s.status)}</span>
+                              </div>
+                              <div class="qi-stu-meta muted">
+                                ${s.errorType ? escapeHtml(s.errorType) + " · " : ""}${escapeHtml(
+                                  s.comment || s.ocr || ""
+                                )}
+                              </div>
+                            </li>`
+                          )
+                          .join("")}
+                      </ul>
+                    </div>`;
+                  })
+                  .join("") || `<div class="models-empty">暂无学生作答明细</div>`}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    const close = () => {
+      root.innerHTML = "";
+    };
+    root.querySelector("#btn-qi-close")?.addEventListener("click", close);
+    root.querySelector("#qi-modal")?.addEventListener("click", (e) => {
+      if (e.target?.id === "qi-modal") close();
+    });
+    root.querySelector("#qi-thumb-open")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!pageSrc) return;
+      openLightbox(
+        [
+          {
+            src: pageSrc,
+            bbox: qBBox,
+            quad: q.quad || null,
+            regions: q.regions || null,
+          },
+        ],
+        0,
+        qBBox || q.quad || (q.regions && q.regions.length)
+          ? `第 ${q.no} 题 · 本题区域`
+          : `第 ${q.no} 题 · 原图`
+      );
+    });
+
+    // 有几何信息时异步裁切缩略图（四边形/双栏/多 region）
+    if (pageSrc && (qBBox || q.quad || (q.regions && q.regions.length))) {
+      cropPageToQuestion(
+        pageSrc,
+        {
+          bbox: qBBox,
+          quad: q.quad,
+          regions: q.regions,
+          layout: q.layout,
+          no: q.no,
+          qid: q.qid,
+        },
+        {
+          padX: 0.03,
+          padY: 0.03,
+          maxEdge: 640,
+        }
+      ).then((dataUrl) => {
+        if (!root.querySelector("#qi-modal")) return;
+        const imgEl = root.querySelector("#qi-thumb-img");
+        const cap = root.querySelector("#qi-thumb-cap");
+        if (dataUrl && imgEl) {
+          imgEl.src = dataUrl;
+          imgEl.classList.add("qi-thumb-cropped");
+          if (cap) {
+            const n = (q.regions && q.regions.length) || 1;
+            cap.textContent =
+              n > 1 ? `本题区域（${n} 块拼接）` : "本题区域（已裁切）";
+          }
+        } else if (cap) {
+          cap.textContent = "原图缩略（裁切失败）";
+        }
+      });
+    }
+  }
+
+  function bindAnalyticsActions(root, task, a) {
     root.querySelector("#btn-copy")?.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(a.feishuSummary);
@@ -2749,6 +3693,18 @@
     root.querySelector("#btn-sync")?.addEventListener("click", () => {
       toast("Demo：已模拟写入飞书多维表格并创建复核待办");
     });
+    root.querySelectorAll("[data-view-q]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openQuestionInsightModal(task, a, btn.getAttribute("data-view-q"));
+      });
+    });
+    root.querySelectorAll("tr.hq-row").forEach((tr) => {
+      tr.addEventListener("click", (e) => {
+        if (e.target.closest("button")) return;
+        openQuestionInsightModal(task, a, tr.getAttribute("data-qid"));
+      });
+    });
   }
 
   function renderAnalytics() {
@@ -2758,7 +3714,40 @@
   function renderAnalyticsInto(root) {
     if (!root) return;
     const task = getActiveTask();
-    const a = task?.analytics;
+    let a = task?.analytics;
+    // 题库升级后：若批改 qid 对不上，按原作答页重批，再算学情
+    if (task?.submissions) {
+      try {
+        const bank = bankOf(task.subjectId);
+        const bankIds = new Set(bank.map((q) => q.id || q.qid));
+        const sample = Object.values(task.submissions)[0];
+        const sampleQid = sample?.items?.[0]?.qid;
+        const needRegrade =
+          bank.length > 0 &&
+          sampleQid &&
+          !bankIds.has(sampleQid) &&
+          typeof G.gradeTask === "function";
+        if (needRegrade) {
+          const groups = Object.values(task.submissions).map((s) => ({
+            studentId: s.studentId,
+            name: s.name,
+            no: s.no,
+            pages: (s.pageMeta || s.pages || []).map((p, i) =>
+              typeof p === "string" ? { src: p, name: `p${i + 1}` } : p
+            ),
+          }));
+          if (groups.length && groups[0].pages?.length) {
+            task.submissions = G.gradeTask(task, bank, groups);
+            toast(`已按最新题库重批 ${bank.length} 题 · ${groups.length} 人`);
+          }
+        }
+        a = G.buildAnalytics(task, task.submissions, bank);
+        task.analytics = a;
+        upsertTask(task);
+      } catch (err) {
+        console.warn("rebuild analytics failed", err);
+      }
+    }
     if (!a) {
       root.innerHTML = `<div class="card"><div class="card-bd"><div class="empty-hint">暂无学情。请先在「改作业」中完成一次批改。</div>
         <div class="mt-12" style="display:flex;gap:8px;flex-wrap:wrap">
@@ -2770,7 +3759,7 @@
       return;
     }
     root.innerHTML = buildAnalyticsHTML(task, a);
-    bindAnalyticsActions(root, a);
+    bindAnalyticsActions(root, task, a);
   }
 
   /* ========== 班级弹窗 ========== */
@@ -3129,29 +4118,49 @@
       return;
     }
     try {
-      const h = await AI.health();
-      el.textContent = h.configured
-        ? `AI 在线 · ${h.vlModel || "VL"}`
-        : "AI 代理未配置 Key";
+      const h = await AI.health({ log: false });
+      state.modelsUi.healthSnap = { ...h, at: Date.now() };
+      const vl = AI.getVlModel?.() || h.vlModel || "VL";
+      el.textContent = h.configured ? `AI 在线 · ${vl}` : "AI 代理未配置 Key";
       el.className = "tag " + (h.configured ? "tag-ok" : "");
-      el.title = `代理 ${AI.getBase()}`;
+      el.title = `识别服务已连接 · 点此打开「识别服务」`;
+      el.style.cursor = "pointer";
+      if (!el.dataset.boundModels) {
+        el.dataset.boundModels = "1";
+        el.addEventListener("click", () => setNav("models"));
+      }
     } catch (_) {
-      el.textContent = "AI 离线 · 需启动代理";
+      el.textContent = "识别服务未连接";
       el.className = "tag";
-      el.title = "在项目根目录运行: python3 server/proxy.py";
+      el.title = "点此打开「识别服务」· 或运行 python3 server/proxy.py";
+      el.style.cursor = "pointer";
+      if (!el.dataset.boundModels) {
+        el.dataset.boundModels = "1";
+        el.addEventListener("click", () => setNav("models"));
+      }
     }
   }
 
   function boot() {
     loadClasses();
-    refreshAiStatus();
-    setInterval(refreshAiStatus, 15000);
+    const aiPill = $("#ai-status-pill");
+    if (aiPill) {
+      aiPill.textContent = "识别服务未检测";
+      aiPill.className = "tag";
+      aiPill.title = "点此打开「识别服务」并测试本机代理";
+      aiPill.style.cursor = "pointer";
+      aiPill.addEventListener("click", () => setNav("models"));
+    }
     $("#meta-box").innerHTML = `
       <strong>${D.meta.product}</strong>
-      改作业 · 数据看板<br/>
+      改作业 · 看板 · 识别服务<br/>
       右上角可切换班级 / 导入名单<br/>
       <span class="small">${D.meta.note}</span>
     `;
+    // 识别记录变化时，若在本页则轻量刷新
+    window.AIClient?.onLog?.(() => {
+      if (state.nav === "models" && !state.modelsUi.probeBusy) renderModelsPanel();
+    });
     bindGlobal();
     updateClassSwitcher();
     setNav("grade", "wizard");

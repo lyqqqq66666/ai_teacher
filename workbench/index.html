@@ -18,9 +18,10 @@
         <span>智教π</span>
       </a>
       <nav aria-label="工作台导航">
-        <a href="../index.html#product">产品介绍</a>
-        <a href="../index.html#flow">动态流程</a>
-        <a href="../index.html#architecture">技术方案</a>
+        <a href="../index.html#insight">命题洞察</a>
+        <a href="../index.html#solution">解决方案</a>
+        <a href="../index.html#innovation">核心创新</a>
+        <a href="../index.html#value">落地价值</a>
         <a class="active" href="./index.html">测试工作台</a>
       </nav>
       <a class="wb-action" href="../index.html">返回首页</a>
@@ -45,6 +46,10 @@
             <button type="button" data-nav="dashboard">
               <span class="nav-icon">▣</span>
               <span>数据看板</span>
+            </button>
+            <button type="button" data-nav="models">
+              <span class="nav-icon">◎</span>
+              <span>识别服务</span>
             </button>
           </nav>
         </div>
@@ -87,6 +92,11 @@
         <section id="panel-dashboard" class="panel">
           <div id="dashboard-body"></div>
         </section>
+
+        <!-- 识别服务：模型中心 / 本地代理状态 -->
+        <section id="panel-models" class="panel">
+          <div id="models-body"></div>
+        </section>
       </main>
     </div>
 
@@ -102,6 +112,7 @@
     <script src="./js/grader.js"></script>
     <script src="./js/matcher.js"></script>
     <script src="./js/math-format.js"></script>
+    <script src="./js/question-split.js"></script>
     <script src="./js/math-pipeline.js"></script>
     <script src="./js/ai-client.js"></script>
     <script src="./js/app.js"></script>
