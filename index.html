@@ -214,13 +214,42 @@
           </div>
 
           <div class="workflow-stage" aria-live="polite">
-            <div class="capture-phone">
-              <div class="phone-top"></div>
-              <div class="phone-screen">
-                <div class="scan-line"></div>
-                <small id="flow-agent">OCR Agent</small>
-                <strong id="flow-screen-title">拍空白题目与答案</strong>
-                <span id="flow-screen-copy">生成题框、题型、分值和评分标准草稿。</span>
+            <div class="scan-console" id="scan-console" data-active-region="question">
+              <div class="console-topbar">
+                <span></span><span></span><span></span>
+                <strong>采集任务控制台</strong>
+              </div>
+              <div class="scan-workspace">
+                <div class="scan-paper">
+                  <img id="flow-preview-img" src="./workbench/public/thumbs/hs_math/IMG_0347.jpg" alt="真实作业页识别预览" />
+                  <span class="scan-frame frame-question"></span>
+                  <span class="scan-frame frame-name"></span>
+                  <span class="scan-frame frame-answer"></span>
+                  <span class="scan-frame frame-review"></span>
+                  <span class="scan-sweep"></span>
+                </div>
+                <div class="agent-stack" id="flow-agent-events" aria-label="Agent 处理状态">
+                  <article>
+                    <span>OCR Agent</span>
+                    <strong>题目区域识别中</strong>
+                    <small>bbox 置信度 0.91</small>
+                  </article>
+                  <article>
+                    <span>Rubric Agent</span>
+                    <strong>评分标准生成</strong>
+                    <small>等待教师确认</small>
+                  </article>
+                  <article>
+                    <span>Review Agent</span>
+                    <strong>低置信项已标记</strong>
+                    <small>进入复核队列</small>
+                  </article>
+                </div>
+              </div>
+              <div class="evidence-card" id="flow-evidence">
+                <span>识别证据</span>
+                <strong>题框 bbox · 答案解析 · Rubric 草稿</strong>
+                <small>原图区域、OCR 文本和评分依据同步保存。</small>
               </div>
             </div>
             <div class="workflow-copy">
@@ -234,6 +263,27 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="section task-chain-section reveal-block" aria-labelledby="task-chain-title">
+        <div class="section-kicker">Chain</div>
+        <div class="split-lead compact">
+          <div>
+            <p class="eyebrow">从采集到讲评</p>
+            <h2 id="task-chain-title">评委只要看这一条链路，就能明白产品闭环。</h2>
+          </div>
+          <p>
+            每个节点都有可见状态：作业如何进入系统、AI 如何处理、老师在哪里复核、结果如何回到课堂。
+          </p>
+        </div>
+        <div class="task-chain" aria-label="从采集到讲评的任务链路">
+          <article class="done"><span>01</span><strong>采集</strong><small>题目/答案/姓名/作答</small></article>
+          <article class="done"><span>02</span><strong>识别</strong><small>OCR + 题目切分</small></article>
+          <article class="active"><span>03</span><strong>批改</strong><small>规则优先 + Rubric</small></article>
+          <article><span>04</span><strong>复核</strong><small>低置信与主观题</small></article>
+          <article><span>05</span><strong>学情</strong><small>错因/知识点/学生趋势</small></article>
+          <article><span>06</span><strong>讲评</strong><small>白板课件与变式练习</small></article>
         </div>
       </section>
 
@@ -294,25 +344,71 @@
       <section id="demo" class="section demo reveal-block" aria-labelledby="demo-title">
         <div class="demo-copy">
           <p class="eyebrow">Demo 工作台</p>
-          <h2 id="demo-title">保留真实测试能力，入口更像产品。</h2>
+          <h2 id="demo-title">看完产品逻辑，再进入真实测试台。</h2>
           <p>
-            工作台继续承载题目切分、多区域裁切、模型代理状态、样例批改和学情报告等测试能力；首页只负责把评委带到正确的产品理解路径。
+            首页把工作台能力先讲清楚：题目如何被切开、证据如何保留、AI 如何给出建议、老师如何复核并生成学情。
           </p>
           <a class="button primary" href="./workbench/">打开测试工作台</a>
+          <div class="capability-grid" aria-label="工作台能力">
+            <button class="capability-card active" type="button" data-demo-feature="split">
+              <span>01</span><strong>题目切分</strong><small>识别题框和作答区</small>
+            </button>
+            <button class="capability-card" type="button" data-demo-feature="crop">
+              <span>02</span><strong>多区域裁切</strong><small>跨区题保留完整证据</small>
+            </button>
+            <button class="capability-card" type="button" data-demo-feature="agent">
+              <span>03</span><strong>模型代理状态</strong><small>OCR / Grading / Review</small>
+            </button>
+            <button class="capability-card" type="button" data-demo-feature="report">
+              <span>04</span><strong>学情报告</strong><small>错因和讲评建议</small>
+            </button>
+          </div>
         </div>
-        <div class="demo-preview" aria-label="工作台预览">
-          <div class="demo-window">
-            <div class="demo-bar"><span></span><span></span><span></span></div>
-            <div class="demo-grid">
-              <aside>
-                <i></i><i></i><i></i><i></i>
+        <div class="demo-showcase" data-active-feature="split" aria-label="工作台真实产品预览">
+          <div class="demo-browser">
+            <div class="demo-bar">
+              <span></span><span></span><span></span>
+              <strong>希沃智教π 工作台</strong>
+            </div>
+            <div class="demo-product">
+              <aside class="demo-sidebar">
+                <strong>样例任务</strong>
+                <button class="active">高中数学 · 空间几何</button>
+                <button>小学数学 · 口算订正</button>
+                <button>高中语文 · 主观题</button>
+                <button>奥数 · 多步骤题</button>
               </aside>
-              <main>
-                <div class="demo-panel wide"></div>
-                <div class="demo-panel"></div>
-                <div class="demo-panel"></div>
-                <div class="demo-panel wide muted"></div>
+              <main class="demo-canvas">
+                <div class="demo-paper-wrap" data-feature-region="split">
+                  <img src="./workbench/public/thumbs/hs_math/IMG_0347.jpg" alt="高中数学作业样例" />
+                  <span class="demo-bbox bbox-one"></span>
+                  <span class="demo-bbox bbox-two"></span>
+                  <span class="demo-bbox bbox-three"></span>
+                </div>
+                <div class="demo-mini-panels">
+                  <article data-feature-region="crop">
+                    <span>多区域裁切</span>
+                    <strong>3 个 region 已拼接</strong>
+                    <small>题干、图形、作答过程合并为完整题图。</small>
+                  </article>
+                  <article data-feature-region="agent">
+                    <span>Agent 状态</span>
+                    <strong>Review Agent 待确认</strong>
+                    <small>主观题低置信，建议进入教师复核。</small>
+                  </article>
+                </div>
               </main>
+              <aside class="demo-inspector" data-feature-region="report">
+                <span>学情摘要</span>
+                <strong>TOP3 丢分点</strong>
+                <ol>
+                  <li>空间关系建立不完整</li>
+                  <li>公式等价转换错误</li>
+                  <li>答句与单位缺失</li>
+                </ol>
+                <div class="report-meter"><i style="width: 68%"></i></div>
+                <small>建议先讲第 3 题，再推送 2 道变式练习。</small>
+              </aside>
             </div>
           </div>
         </div>

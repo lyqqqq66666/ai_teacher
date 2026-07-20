@@ -4,6 +4,12 @@ const mapCaption = document.getElementById("map-caption");
 const navLinks = document.querySelectorAll(".nav-links a");
 const countItems = document.querySelectorAll("[data-count]");
 const parallaxItems = document.querySelectorAll(".parallax");
+const scanConsole = document.getElementById("scan-console");
+const flowPreviewImg = document.getElementById("flow-preview-img");
+const flowEvidence = document.getElementById("flow-evidence");
+const flowAgentEvents = document.getElementById("flow-agent-events");
+const demoShowcase = document.querySelector(".demo-showcase");
+const demoFeatureButtons = document.querySelectorAll("[data-demo-feature]");
 
 const flowData = [
   {
@@ -15,6 +21,14 @@ const flowData = [
     copy:
       "系统先识别空白题目和答案册，产出题框、知识点、答案解析和 Rubric 草稿，避免直接盲判学生作答。",
     tags: ["题框 bbox", "答案解析", "Rubric 草稿"],
+    previewImage: "./workbench/public/thumbs/hs_math/IMG_0347.jpg",
+    activeRegion: "question",
+    evidenceItems: ["题框 bbox", "标准答案解析", "满分与题型"],
+    agentEvents: [
+      ["OCR Agent", "题目区域识别完成", "bbox 置信度 0.91"],
+      ["Rubric Agent", "生成评分标准草稿", "等待教师确认"],
+      ["Task Queue", "已创建批改任务", "可继续拍下一页"],
+    ],
   },
   {
     label: "Step 02",
@@ -25,6 +39,14 @@ const flowData = [
     copy:
       "Rubric 不自动放行。教师确认或调整后，系统才把同一套评分标准批量应用到全班作答。",
     tags: ["步骤分", "教师确认", "版本记录"],
+    previewImage: "./workbench/public/thumbs/hs_math/IMG_0350.jpg",
+    activeRegion: "rubric",
+    evidenceItems: ["步骤分", "扣分原因", "Rubric 版本"],
+    agentEvents: [
+      ["Rubric Agent", "拆解 3 个评分点", "主观题不自动放行"],
+      ["Teacher Review", "等待确认标准", "修改会记录版本"],
+      ["Schema Check", "结构化输出通过", "可批量复用"],
+    ],
   },
   {
     label: "Step 03",
@@ -35,6 +57,14 @@ const flowData = [
     copy:
       "老师可以从任意一本作业开始拍。系统识别姓名、学号或封面信息，低置信候选会明确进入人工确认。",
     tags: ["姓名 OCR", "名单匹配", "重复页检测"],
+    previewImage: "./workbench/public/thumbs/hs_chinese/IMG_0305.jpg",
+    activeRegion: "identity",
+    evidenceItems: ["姓名栏", "班级名单", "候选学生"],
+    agentEvents: [
+      ["Identity Agent", "匹配到候选学生", "置信度 0.86"],
+      ["Roster Check", "同名风险已排除", "学号为空不编造"],
+      ["Page Guard", "重复页检测通过", "绑定作业 ID"],
+    ],
   },
   {
     label: "Step 04",
@@ -45,6 +75,14 @@ const flowData = [
     copy:
       "前台继续拍下一页，后台完成图像增强、题目切分、手写识别、公式解析和分题型判分。",
     tags: ["多区域切分", "公式识别", "规则优先"],
+    previewImage: "./workbench/public/thumbs/hs_math/IMG_0353.jpg",
+    activeRegion: "grading",
+    evidenceItems: ["多区域题图", "公式 LaTeX", "规则判分"],
+    agentEvents: [
+      ["QuestionSplit", "跨区题已拼接", "3 regions -> 1 题图"],
+      ["Formula OCR", "公式转 LaTeX", "等价校验待执行"],
+      ["Grading Agent", "客观规则优先", "主观题进入建议分"],
+    ],
   },
   {
     label: "Step 05",
@@ -55,6 +93,14 @@ const flowData = [
     copy:
       "复核台展示原图区域、OCR 文本、步骤得分和扣分理由。教师修改会进入 Bad Case 和 Eval 回归。",
     tags: ["置信度", "原图证据", "Bad Case"],
+    previewImage: "./workbench/public/thumbs/hs_chinese/IMG_0318.jpg",
+    activeRegion: "review",
+    evidenceItems: ["低置信题", "原图证据", "教师裁决"],
+    agentEvents: [
+      ["Review Agent", "异常分已置顶", "优先级 P0"],
+      ["Evidence", "原图与 OCR 对齐", "可追溯扣分点"],
+      ["Bad Case", "修改回流样例库", "纳入 Eval 回归"],
+    ],
   },
   {
     label: "Step 06",
@@ -65,6 +111,14 @@ const flowData = [
     copy:
       "学情结果转为希沃白板讲评页、易课堂练习包、飞书复核卡片和可追踪的教研数据。",
     tags: ["希沃白板", "易课堂", "飞书 Base", "Aily"],
+    previewImage: "./workbench/public/thumbs/math/IMG_0293.jpg",
+    activeRegion: "teaching",
+    evidenceItems: ["讲评顺序", "变式练习", "飞书卡片"],
+    agentEvents: [
+      ["Diagnosis Agent", "生成 TOP3 丢分点", "关联知识点"],
+      ["Teaching Agent", "讲评课草稿完成", "等待教师确认"],
+      ["Feishu Bot", "复核摘要可推送", "Base 同步记录"],
+    ],
   },
 ];
 
@@ -80,13 +134,34 @@ function setFlow(index) {
   const item = flowData[index];
   if (!item) return;
 
-  document.getElementById("flow-label").textContent = item.label;
-  document.getElementById("flow-screen-title").textContent = item.screenTitle;
-  document.getElementById("flow-screen-copy").textContent = item.screenCopy;
-  document.getElementById("flow-agent").textContent = item.agent;
-  document.getElementById("flow-title-dynamic").textContent = item.title;
-  document.getElementById("flow-copy-dynamic").textContent = item.copy;
-  document.getElementById("flow-tags").innerHTML = item.tags.map((tag) => `<span>${tag}</span>`).join("");
+  if (scanConsole) scanConsole.dataset.activeRegion = item.activeRegion;
+  if (flowPreviewImg) flowPreviewImg.src = item.previewImage;
+  const flowLabel = document.getElementById("flow-label");
+  const flowTitle = document.getElementById("flow-title-dynamic");
+  const flowCopy = document.getElementById("flow-copy-dynamic");
+  const flowTags = document.getElementById("flow-tags");
+  if (flowLabel) flowLabel.textContent = item.label;
+  if (flowTitle) flowTitle.textContent = item.title;
+  if (flowCopy) flowCopy.textContent = item.copy;
+  if (flowTags) flowTags.innerHTML = item.tags.map((tag) => `<span>${tag}</span>`).join("");
+  if (flowEvidence) {
+    flowEvidence.innerHTML = `
+      <span>识别证据</span>
+      <strong>${item.evidenceItems.join(" · ")}</strong>
+      <small>原图区域、OCR 文本和评分依据同步保存，教师复核时可以回看。</small>
+    `;
+  }
+  if (flowAgentEvents) {
+    flowAgentEvents.innerHTML = item.agentEvents
+      .map(([agent, title, detail]) => `
+        <article>
+          <span>${agent}</span>
+          <strong>${title}</strong>
+          <small>${detail}</small>
+        </article>
+      `)
+      .join("");
+  }
 
   flowButtons.forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.flow) === index);
@@ -176,6 +251,21 @@ mapButtons.forEach((button) => {
   button.addEventListener("click", () => setMapNode(key));
 });
 
+function setDemoFeature(feature) {
+  if (!demoShowcase) return;
+  demoShowcase.dataset.activeFeature = feature;
+  demoFeatureButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.demoFeature === feature);
+  });
+}
+
+demoFeatureButtons.forEach((button) => {
+  const feature = button.dataset.demoFeature;
+  button.addEventListener("mouseenter", () => setDemoFeature(feature));
+  button.addEventListener("focus", () => setDemoFeature(feature));
+  button.addEventListener("click", () => setDemoFeature(feature));
+});
+
 function updateParallax() {
   const viewport = window.innerHeight || 1;
   parallaxItems.forEach((item) => {
@@ -191,4 +281,5 @@ window.addEventListener("resize", updateParallax);
 
 setFlow(currentFlow);
 setMapNode("client");
+setDemoFeature("split");
 updateParallax();
