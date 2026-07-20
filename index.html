@@ -8,11 +8,11 @@
       name="description"
       content="希沃智教π面向视源股份命题，围绕教师纸质作业采集、AI 批改、学情诊断和希沃白板讲评形成教学闭环。"
     />
-    <link rel="icon" href="./assets/seewo-logo.svg" type="image/svg+xml" />
+    <link rel="icon" href="./assets/favicon-pi.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header class="site-header" aria-label="主导航">
+    <header class="site-header is-at-top" aria-label="主导航">
       <a class="brand" href="#top" aria-label="希沃智教π 首页">
         <img src="./assets/seewo-logo-dark.svg" alt="seewo" />
         <span>智教π</span>
@@ -214,44 +214,7 @@
           </div>
 
           <div class="workflow-stage" aria-live="polite">
-            <div class="scan-console" id="scan-console" data-active-region="question">
-              <div class="console-topbar">
-                <span></span><span></span><span></span>
-                <strong>采集任务控制台</strong>
-              </div>
-              <div class="scan-workspace">
-                <div class="scan-paper">
-                  <img id="flow-preview-img" src="./workbench/public/thumbs/hs_math/IMG_0347.jpg" alt="真实作业页识别预览" />
-                  <span class="scan-frame frame-question"></span>
-                  <span class="scan-frame frame-name"></span>
-                  <span class="scan-frame frame-answer"></span>
-                  <span class="scan-frame frame-review"></span>
-                  <span class="scan-sweep"></span>
-                </div>
-                <div class="agent-stack" id="flow-agent-events" aria-label="Agent 处理状态">
-                  <article>
-                    <span>OCR Agent</span>
-                    <strong>题目区域识别中</strong>
-                    <small>bbox 置信度 0.91</small>
-                  </article>
-                  <article>
-                    <span>Rubric Agent</span>
-                    <strong>评分标准生成</strong>
-                    <small>等待教师确认</small>
-                  </article>
-                  <article>
-                    <span>Review Agent</span>
-                    <strong>低置信项已标记</strong>
-                    <small>进入复核队列</small>
-                  </article>
-                </div>
-              </div>
-              <div class="evidence-card" id="flow-evidence">
-                <span>识别证据</span>
-                <strong>题框 bbox · 答案解析 · Rubric 草稿</strong>
-                <small>原图区域、OCR 文本和评分依据同步保存。</small>
-              </div>
-            </div>
+            <div class="workflow-visual is-flow-visible" id="flow-visual" aria-label="流程产品界面预览"></div>
             <div class="workflow-copy">
               <p class="eyebrow" id="flow-label">Step 01</p>
               <h3 id="flow-title-dynamic">先让系统理解本次作业</h3>

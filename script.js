@@ -1,13 +1,11 @@
 const flowButtons = document.querySelectorAll("[data-flow]");
 const mapButtons = document.querySelectorAll("[data-map-node]");
 const mapCaption = document.getElementById("map-caption");
+const siteHeader = document.querySelector(".site-header");
 const navLinks = document.querySelectorAll(".nav-links a");
 const countItems = document.querySelectorAll("[data-count]");
 const parallaxItems = document.querySelectorAll(".parallax");
-const scanConsole = document.getElementById("scan-console");
-const flowPreviewImg = document.getElementById("flow-preview-img");
-const flowEvidence = document.getElementById("flow-evidence");
-const flowAgentEvents = document.getElementById("flow-agent-events");
+const flowVisual = document.getElementById("flow-visual");
 const demoShowcase = document.querySelector(".demo-showcase");
 const demoFeatureButtons = document.querySelectorAll("[data-demo-feature]");
 
@@ -21,6 +19,7 @@ const flowData = [
     copy:
       "系统先识别空白题目和答案册，产出题框、知识点、答案解析和 Rubric 草稿，避免直接盲判学生作答。",
     tags: ["题框 bbox", "答案解析", "Rubric 草稿"],
+    visualType: "scan",
     previewImage: "./workbench/public/thumbs/hs_math/IMG_0347.jpg",
     activeRegion: "question",
     evidenceItems: ["题框 bbox", "标准答案解析", "满分与题型"],
@@ -39,6 +38,7 @@ const flowData = [
     copy:
       "Rubric 不自动放行。教师确认或调整后，系统才把同一套评分标准批量应用到全班作答。",
     tags: ["步骤分", "教师确认", "版本记录"],
+    visualType: "rubric",
     previewImage: "./workbench/public/thumbs/hs_math/IMG_0350.jpg",
     activeRegion: "rubric",
     evidenceItems: ["步骤分", "扣分原因", "Rubric 版本"],
@@ -57,6 +57,7 @@ const flowData = [
     copy:
       "老师可以从任意一本作业开始拍。系统识别姓名、学号或封面信息，低置信候选会明确进入人工确认。",
     tags: ["姓名 OCR", "名单匹配", "重复页检测"],
+    visualType: "identity",
     previewImage: "./workbench/public/thumbs/hs_chinese/IMG_0305.jpg",
     activeRegion: "identity",
     evidenceItems: ["姓名栏", "班级名单", "候选学生"],
@@ -75,6 +76,7 @@ const flowData = [
     copy:
       "前台继续拍下一页，后台完成图像增强、题目切分、手写识别、公式解析和分题型判分。",
     tags: ["多区域切分", "公式识别", "规则优先"],
+    visualType: "grading",
     previewImage: "./workbench/public/thumbs/hs_math/IMG_0353.jpg",
     activeRegion: "grading",
     evidenceItems: ["多区域题图", "公式 LaTeX", "规则判分"],
@@ -93,6 +95,7 @@ const flowData = [
     copy:
       "复核台展示原图区域、OCR 文本、步骤得分和扣分理由。教师修改会进入 Bad Case 和 Eval 回归。",
     tags: ["置信度", "原图证据", "Bad Case"],
+    visualType: "review",
     previewImage: "./workbench/public/thumbs/hs_chinese/IMG_0318.jpg",
     activeRegion: "review",
     evidenceItems: ["低置信题", "原图证据", "教师裁决"],
@@ -111,6 +114,7 @@ const flowData = [
     copy:
       "学情结果转为希沃白板讲评页、易课堂练习包、飞书复核卡片和可追踪的教研数据。",
     tags: ["希沃白板", "易课堂", "飞书 Base", "Aily"],
+    visualType: "teaching",
     previewImage: "./workbench/public/thumbs/math/IMG_0293.jpg",
     activeRegion: "teaching",
     evidenceItems: ["讲评顺序", "变式练习", "飞书卡片"],
@@ -121,6 +125,167 @@ const flowData = [
     ],
   },
 ];
+
+function renderAgentStack(events) {
+  return `
+    <div class="agent-stack" aria-label="Agent 处理状态">
+      ${events
+        .map(
+          ([agent, title, detail]) => `
+            <article>
+              <span>${agent}</span>
+              <strong>${title}</strong>
+              <small>${detail}</small>
+            </article>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function renderEvidenceCard(item, label = "识别证据") {
+  return `
+    <div class="evidence-card">
+      <span>${label}</span>
+      <strong>${item.evidenceItems.join(" · ")}</strong>
+      <small>原图区域、OCR 文本和评分依据同步保存，教师复核时可以回看。</small>
+    </div>
+  `;
+}
+
+function renderScanPanel(item) {
+  return `
+    <div class="scan-console flow-panel" data-active-region="${item.activeRegion}">
+      <div class="console-topbar">
+        <span></span><span></span><span></span>
+        <strong>${item.visualType === "grading" ? "异步批改控制台" : "采集任务控制台"}</strong>
+      </div>
+      <div class="scan-workspace">
+        <div class="scan-paper">
+          <img src="${item.previewImage}" alt="真实作业页识别预览" />
+          <span class="scan-frame frame-question"></span>
+          <span class="scan-frame frame-name"></span>
+          <span class="scan-frame frame-answer"></span>
+          <span class="scan-frame frame-review"></span>
+          <span class="scan-sweep"></span>
+        </div>
+        ${renderAgentStack(item.agentEvents)}
+      </div>
+      ${renderEvidenceCard(item)}
+    </div>
+  `;
+}
+
+function renderRubricPanel(item) {
+  return `
+    <div class="product-console rubric-console flow-panel">
+      <div class="console-topbar"><span></span><span></span><span></span><strong>Rubric 评分标准编辑器</strong></div>
+      <div class="rubric-board">
+        <aside class="rubric-summary">
+          <span>Question 03</span>
+          <strong>立体几何解答题 · 6 分</strong>
+          <small>未确认 Rubric 不允许批量判分</small>
+          <button type="button">教师确认标准</button>
+        </aside>
+        <div class="rubric-rows">
+          <article><span>2 分</span><strong>建立空间关系</strong><small>识别关键图形关系和辅助线。</small></article>
+          <article><span>2 分</span><strong>列出向量/几何关系</strong><small>过程表达完整，允许等价写法。</small></article>
+          <article><span>2 分</span><strong>计算并写出结论</strong><small>答案、单位和结论句完整。</small></article>
+        </div>
+      </div>
+      ${renderEvidenceCard(item, "Rubric 证据")}
+    </div>
+  `;
+}
+
+function renderIdentityPanel(item) {
+  return `
+    <div class="product-console identity-console flow-panel">
+      <div class="console-topbar"><span></span><span></span><span></span><strong>学生身份绑定台</strong></div>
+      <div class="identity-grid">
+        <div class="identity-scan">
+          <div class="id-card">
+            <span>姓名栏 OCR</span>
+            <strong>李一航</strong>
+            <small>高二 3 班 · 数学作业 · 第 2 页</small>
+          </div>
+          <div class="confidence-ring"><strong>86%</strong><span>匹配置信度</span></div>
+        </div>
+        <div class="candidate-list">
+          <article class="active"><strong>李一航</strong><small>学号 20260318 · 高置信候选</small></article>
+          <article><strong>李逸航</strong><small>同音姓名 · 需排除</small></article>
+          <article><strong>重复页检测</strong><small>未发现重复上传</small></article>
+        </div>
+      </div>
+      ${renderEvidenceCard(item, "身份绑定证据")}
+    </div>
+  `;
+}
+
+function renderReviewPanel(item) {
+  return `
+    <div class="product-console review-console flow-panel">
+      <div class="console-topbar"><span></span><span></span><span></span><strong>异常聚焦复核台</strong></div>
+      <div class="review-grid">
+        <div class="review-image">
+          <img src="${item.previewImage}" alt="主观题复核原图区域" />
+          <span></span>
+        </div>
+        <div class="review-detail">
+          <span>低置信 · P0</span>
+          <strong>步骤 2 缺少关键推导</strong>
+          <p>OCR 文本与图形关系存在偏差，建议教师确认是否给过程分。</p>
+          <div><button type="button">采纳建议分</button><button type="button">改为复核通过</button></div>
+        </div>
+      </div>
+      ${renderEvidenceCard(item, "复核证据")}
+    </div>
+  `;
+}
+
+function renderTeachingPanel(item) {
+  return `
+    <div class="product-console teaching-console flow-panel">
+      <div class="console-topbar"><span></span><span></span><span></span><strong>讲评课生成器</strong></div>
+      <div class="teaching-board">
+        <section>
+          <span>学情 TOP3</span>
+          <strong>空间关系建立不完整</strong>
+          <ol>
+            <li>典型错题：第 3 题</li>
+            <li>需优先关注学生：8 人</li>
+            <li>建议先讲图形关系，再讲计算</li>
+          </ol>
+        </section>
+        <section class="lesson-card">
+          <span>希沃白板</span>
+          <strong>讲评页草稿已生成</strong>
+          <small>板书结构 · 变式练习 · 分层作业</small>
+        </section>
+      </div>
+      ${renderEvidenceCard(item, "讲评输出")}
+    </div>
+  `;
+}
+
+function renderFlowVisual(item) {
+  if (!flowVisual) return;
+  flowVisual.classList.remove("is-flow-visible");
+  window.setTimeout(() => flowVisual.classList.add("is-flow-visible"), 30);
+
+  if (item.visualType === "rubric") {
+    flowVisual.innerHTML = renderRubricPanel(item);
+  } else if (item.visualType === "identity") {
+    flowVisual.innerHTML = renderIdentityPanel(item);
+  } else if (item.visualType === "review") {
+    flowVisual.innerHTML = renderReviewPanel(item);
+  } else if (item.visualType === "teaching") {
+    flowVisual.innerHTML = renderTeachingPanel(item);
+  } else {
+    flowVisual.innerHTML = renderScanPanel(item);
+  }
+}
 
 const mapData = {
   client: "教师在多端完成低门槛采集，系统把图片、身份、题目和作答绑定成可批改任务。",
@@ -134,8 +299,7 @@ function setFlow(index) {
   const item = flowData[index];
   if (!item) return;
 
-  if (scanConsole) scanConsole.dataset.activeRegion = item.activeRegion;
-  if (flowPreviewImg) flowPreviewImg.src = item.previewImage;
+  renderFlowVisual(item);
   const flowLabel = document.getElementById("flow-label");
   const flowTitle = document.getElementById("flow-title-dynamic");
   const flowCopy = document.getElementById("flow-copy-dynamic");
@@ -144,25 +308,6 @@ function setFlow(index) {
   if (flowTitle) flowTitle.textContent = item.title;
   if (flowCopy) flowCopy.textContent = item.copy;
   if (flowTags) flowTags.innerHTML = item.tags.map((tag) => `<span>${tag}</span>`).join("");
-  if (flowEvidence) {
-    flowEvidence.innerHTML = `
-      <span>识别证据</span>
-      <strong>${item.evidenceItems.join(" · ")}</strong>
-      <small>原图区域、OCR 文本和评分依据同步保存，教师复核时可以回看。</small>
-    `;
-  }
-  if (flowAgentEvents) {
-    flowAgentEvents.innerHTML = item.agentEvents
-      .map(([agent, title, detail]) => `
-        <article>
-          <span>${agent}</span>
-          <strong>${title}</strong>
-          <small>${detail}</small>
-        </article>
-      `)
-      .join("");
-  }
-
   flowButtons.forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.flow) === index);
   });
@@ -266,6 +411,19 @@ demoFeatureButtons.forEach((button) => {
   button.addEventListener("click", () => setDemoFeature(feature));
 });
 
+let lastScrollY = window.scrollY;
+
+function updateHeaderState() {
+  if (!siteHeader) return;
+  const currentY = window.scrollY;
+  const isAtTop = currentY < 12;
+  const scrollingDown = currentY > lastScrollY;
+  siteHeader.classList.toggle("is-at-top", isAtTop);
+  siteHeader.classList.toggle("is-scrolled", currentY > 72);
+  siteHeader.classList.toggle("is-hidden", scrollingDown && currentY > 280);
+  lastScrollY = currentY;
+}
+
 function updateParallax() {
   const viewport = window.innerHeight || 1;
   parallaxItems.forEach((item) => {
@@ -277,7 +435,12 @@ function updateParallax() {
 }
 
 window.addEventListener("scroll", updateParallax, { passive: true });
+window.addEventListener("scroll", updateHeaderState, { passive: true });
 window.addEventListener("resize", updateParallax);
+
+setFlow(0);
+updateHeaderState();
+updateParallax();
 
 setFlow(currentFlow);
 setMapNode("client");
