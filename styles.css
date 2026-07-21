@@ -295,7 +295,6 @@ h3 {
 .split-lead > p,
 .logic-strip p,
 .solution-steps p,
-.workflow-copy p,
 .ecosystem-flow p,
 .demo-copy p,
 .map-caption {
@@ -553,49 +552,6 @@ h3 {
   min-height: 62px;
   margin: 28px auto 0;
   text-align: center;
-}
-
-.workflow-shell {
-  display: grid;
-  gap: 28px;
-}
-
-.stepper {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--line);
-}
-
-.stepper button {
-  min-height: 58px;
-  border: 0;
-  color: var(--muted);
-  background: #fff;
-  font-weight: 900;
-  cursor: pointer;
-  transition: color 180ms ease, background 180ms ease;
-}
-
-.stepper button.active {
-  color: #fff;
-  background: var(--teal);
-}
-
-.workflow-stage {
-  display: grid;
-  grid-template-columns: minmax(520px, 0.92fr) minmax(0, 0.78fr);
-  gap: clamp(34px, 6vw, 72px);
-  align-items: center;
-  min-height: 560px;
-  padding: clamp(24px, 5vw, 58px);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: var(--shadow);
 }
 
 .workflow-visual {
@@ -1052,31 +1008,7 @@ h3 {
   box-shadow: inset 0 0 0 1px rgba(0, 169, 157, 0.18);
 }
 
-.workflow-copy {
-  max-width: 720px;
-}
 
-.workflow-copy h3 {
-  font-size: clamp(30px, 4vw, 52px);
-  line-height: 1.08;
-}
-
-.flow-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 24px;
-}
-
-.flow-tags span {
-  padding: 8px 12px;
-  border: 1px solid #bde9e4;
-  border-radius: 8px;
-  color: var(--teal-dark);
-  background: var(--soft-2);
-  font-size: 13px;
-  font-weight: 900;
-}
 
 .task-chain-section {
   overflow: hidden;
@@ -1532,14 +1464,12 @@ h3 {
   .logic-strip,
   .ecosystem-flow,
   .metric-board,
-  .stepper,
   .task-chain {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .split-lead,
   .solution-canvas,
-  .workflow-stage,
   .demo {
     grid-template-columns: 1fr;
   }
@@ -1657,7 +1587,6 @@ h3 {
   .logic-strip,
   .ecosystem-flow,
   .metric-board,
-  .stepper,
   .task-chain,
   .capability-grid,
   .demo-mini-panels {
@@ -1703,11 +1632,6 @@ h3 {
     background-size: 2px 100%;
     background-repeat: no-repeat;
     background-position: center;
-  }
-
-  .workflow-stage {
-    padding: 18px;
-    min-height: auto;
   }
 
   .scan-workspace {
@@ -1848,57 +1772,130 @@ h3 {
   line-height: 1.72;
 }
 
-.compact-chain {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0 0 28px;
-  padding: 0;
-  list-style: none;
-}
-
-.compact-chain li {
+/* ===== 故事线叙事 ===== */
+.story-flow {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 52px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
+  flex-direction: column;
+  gap: 0;
 }
 
-.compact-chain li span {
+.story-phase {
   display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: #edf4f3;
-  color: var(--teal-dark);
-  font-size: 12px;
-  font-weight: 900;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  transition: border-color 220ms ease, box-shadow 220ms ease;
 }
 
-.compact-chain li.done span,
-.compact-chain li.active span {
+.story-phase:hover {
+  border-color: rgba(0, 169, 157, 0.35);
+  box-shadow: 0 18px 48px rgba(0, 169, 157, 0.08);
+}
+
+.story-phase-head {
+  display: grid;
+  gap: 10px;
+}
+
+.story-phase-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 14px;
+  border-radius: 999px;
   background: var(--teal);
   color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
 }
 
-.compact-chain li.active {
-  border-color: rgba(0, 169, 157, 0.35);
-  box-shadow: 0 10px 24px rgba(0, 169, 157, 0.08);
+.story-phase-head h3 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 800;
+  line-height: 1.25;
 }
 
-.compact-chain li strong {
-  font-size: 15px;
+.story-phase-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 52em;
+}
+
+.story-phase-visual {
+  min-height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--soft);
+}
+
+.story-phase-visual .flow-panel {
+  min-height: 340px;
+}
+
+.story-phase-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.story-phase-tags span {
+  padding: 6px 14px;
+  border: 1px solid #bde9e4;
+  border-radius: 999px;
+  background: rgba(238, 247, 246, 0.6);
+  color: var(--teal-dark);
+  font-size: 13px;
   font-weight: 800;
 }
 
-.how-section .workflow-shell {
-  margin-top: 0;
+.story-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+  color: var(--teal);
 }
+
+.story-connector svg {
+  width: 32px;
+  height: 18px;
+}
+
+/* 响应式 */
+@media (max-width: 820px) {
+  .story-phase {
+    padding: 20px;
+  }
+
+  .story-phase-visual {
+    min-height: 280px;
+  }
+
+  .story-phase-visual .flow-panel {
+    min-height: 260px;
+  }
+}
+
+@media (max-width: 520px) {
+  .story-connector {
+    transform: rotate(90deg);
+    padding: 2px 0;
+  }
+}
+
+
 
 .fit-arch {
   display: grid;
@@ -1991,16 +1988,11 @@ h3 {
   .fit-arch {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .compact-chain {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 760px) {
   .fit-arch,
-  .fit-metrics,
-  .compact-chain {
+  .fit-metrics {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -2012,8 +2004,7 @@ h3 {
 
 @media (max-width: 520px) {
   .fit-arch,
-  .fit-metrics,
-  .compact-chain {
+  .fit-metrics {
     grid-template-columns: 1fr;
   }
 }

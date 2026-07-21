@@ -1,11 +1,9 @@
-const flowButtons = document.querySelectorAll("[data-flow]");
 const mapButtons = document.querySelectorAll("[data-map-node]");
 const mapCaption = document.getElementById("map-caption");
 const siteHeader = document.querySelector(".site-header");
 const navLinks = document.querySelectorAll(".nav-links a");
 const countItems = document.querySelectorAll("[data-count]");
 const parallaxItems = document.querySelectorAll(".parallax");
-const flowVisual = document.getElementById("flow-visual");
 const demoShowcase = document.querySelector(".demo-showcase");
 const demoFeatureButtons = document.querySelectorAll("[data-demo-feature]");
 
@@ -269,21 +267,22 @@ function renderTeachingPanel(item) {
   `;
 }
 
-function renderFlowVisual(item) {
-  if (!flowVisual) return;
-  flowVisual.classList.remove("is-flow-visible");
-  window.setTimeout(() => flowVisual.classList.add("is-flow-visible"), 30);
+function renderFlowVisual(targetId, item) {
+  const container = document.getElementById(targetId);
+  if (!container) return;
+  container.classList.remove("is-flow-visible");
+  window.setTimeout(() => container.classList.add("is-flow-visible"), 30);
 
   if (item.visualType === "rubric") {
-    flowVisual.innerHTML = renderRubricPanel(item);
+    container.innerHTML = renderRubricPanel(item);
   } else if (item.visualType === "identity") {
-    flowVisual.innerHTML = renderIdentityPanel(item);
+    container.innerHTML = renderIdentityPanel(item);
   } else if (item.visualType === "review") {
-    flowVisual.innerHTML = renderReviewPanel(item);
+    container.innerHTML = renderReviewPanel(item);
   } else if (item.visualType === "teaching") {
-    flowVisual.innerHTML = renderTeachingPanel(item);
+    container.innerHTML = renderTeachingPanel(item);
   } else {
-    flowVisual.innerHTML = renderScanPanel(item);
+    container.innerHTML = renderScanPanel(item);
   }
 }
 
@@ -294,24 +293,6 @@ const mapData = {
   eco: "结果导向希沃白板与易课堂，作业数据回到课堂。",
   feishu: "飞书承接复核提醒、Base 存档与学情查询。",
 };
-
-function setFlow(index) {
-  const item = flowData[index];
-  if (!item) return;
-
-  renderFlowVisual(item);
-  const flowLabel = document.getElementById("flow-label");
-  const flowTitle = document.getElementById("flow-title-dynamic");
-  const flowCopy = document.getElementById("flow-copy-dynamic");
-  const flowTags = document.getElementById("flow-tags");
-  if (flowLabel) flowLabel.textContent = item.label;
-  if (flowTitle) flowTitle.textContent = item.title;
-  if (flowCopy) flowCopy.textContent = item.copy;
-  if (flowTags) flowTags.innerHTML = item.tags.map((tag) => `<span>${tag}</span>`).join("");
-  flowButtons.forEach((button) => {
-    button.classList.toggle("active", Number(button.dataset.flow) === index);
-  });
-}
 
 function setMapNode(key) {
   if (!mapData[key] || !mapCaption) return;
@@ -371,23 +352,43 @@ const navObserver = new IntersectionObserver(
 
 document.querySelectorAll("main section[id]").forEach((section) => navObserver.observe(section));
 
-let currentFlow = 0;
-let flowTimer = window.setInterval(() => {
-  currentFlow = (currentFlow + 1) % flowData.length;
-  setFlow(currentFlow);
-}, 5200);
+// 三阶段故事线渲染
+const storyPhases = [
+  { visualId: 'flow-visual-0', tagsId: 'flow-tags-0', indices: [0, 1] },   // 课前：拍题+确认Rubric
+  { visualId: 'flow-visual-1', tagsId: 'flow-tags-1', indices: [2, 3, 4] }, // 课后：拍作答+批改+复核
+  { visualId: 'flow-visual-2', tagsId: 'flow-tags-2', indices: [5] },        // 课堂：讲评
+];
 
-flowButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    window.clearInterval(flowTimer);
-    currentFlow = Number(button.dataset.flow);
-    setFlow(currentFlow);
-    flowTimer = window.setInterval(() => {
-      currentFlow = (currentFlow + 1) % flowData.length;
-      setFlow(currentFlow);
-    }, 5200);
-  });
-});
+let currentPhaseIdx = 0;
+let currentSubIdx = 0;
+
+function renderStoryPhase(phaseIdx, subIdx) {
+  const phase = storyPhases[phaseIdx];
+  if (!phase) return;
+  const dataIdx = phase.indices[subIdx] ?? phase.indices[0];
+  const item = flowData[dataIdx];
+  if (!item) return;
+  renderFlowVisual(phase.visualId, item);
+
+  const tagsEl = document.getElementById(phase.tagsId);
+  if (tagsEl) {
+    tagsEl.innerHTML = item.tags.map((tag) => `<span>${tag}</span>`).join("");
+  }
+}
+
+// 初始渲染
+renderStoryPhase(0, 0);
+renderStoryPhase(1, 0);
+renderStoryPhase(2, 0);
+
+// 自动轮播：每个阶段内子步骤轮播
+let storyTimer = window.setInterval(() => {
+  currentSubIdx = (currentSubIdx + 1) % storyPhases[currentPhaseIdx].indices.length;
+  if (currentSubIdx === 0) {
+    currentPhaseIdx = (currentPhaseIdx + 1) % storyPhases.length;
+  }
+  renderStoryPhase(currentPhaseIdx, currentSubIdx);
+}, 4200);
 
 mapButtons.forEach((button) => {
   const key = button.dataset.mapNode;
@@ -527,11 +528,6 @@ window.addEventListener("scroll", updateParallax, { passive: true });
 window.addEventListener("scroll", updateHeaderState, { passive: true });
 window.addEventListener("resize", updateParallax);
 
-setFlow(0);
-updateHeaderState();
-updateParallax();
-
-setFlow(currentFlow);
 setMapNode("client");
 setDemoFeature("split");
 updateParallax();

@@ -62,39 +62,57 @@
       <section id="how" class="section how-section reveal-block" aria-labelledby="how-title">
         <div class="how-head">
           <h2 id="how-title">解决方案</h2>
-          <p class="lead-one-liner">前台连续采集，后台并行批改，异常进复核，结果进课堂。</p>
+          <p class="lead-one-liner">空白题目答案 + 全班学生过程 = 一人一评价</p>
         </div>
 
-        <ol class="task-chain compact-chain" aria-label="产品主链路">
-          <li class="done"><span>1</span><strong>采集</strong></li>
-          <li class="done"><span>2</span><strong>识别</strong></li>
-          <li class="active"><span>3</span><strong>批改</strong></li>
-          <li><span>4</span><strong>复核</strong></li>
-          <li><span>5</span><strong>学情</strong></li>
-          <li><span>6</span><strong>讲评</strong></li>
-        </ol>
-
-        <div class="workflow-shell">
-          <div class="stepper" role="tablist" aria-label="批改流程">
-            <button class="active" type="button" data-flow="0">拍题建标准</button>
-            <button type="button" data-flow="1">确认 Rubric</button>
-            <button type="button" data-flow="2">拍姓名作答</button>
-            <button type="button" data-flow="3">异步批改</button>
-            <button type="button" data-flow="4">异常复核</button>
-            <button type="button" data-flow="5">讲评输出</button>
+        <div class="story-flow" aria-label="产品故事线">
+          <div class="story-phase" data-phase="0">
+            <div class="story-phase-head">
+              <span class="story-phase-badge">课前</span>
+              <h3>教师拍题，AI 建标准</h3>
+              <p>拍空白题目与答案册，AI 自动生成题框与评分标准草稿，教师确认后即可批量批改。</p>
+            </div>
+            <div class="story-phase-visual">
+              <div class="workflow-visual is-flow-visible" id="flow-visual-0" aria-label="课前产品预览"></div>
+            </div>
+            <div class="story-phase-tags" id="flow-tags-0">
+              <span>题框 bbox</span><span>答案解析</span><span>Rubric 草稿</span>
+            </div>
           </div>
 
-          <div class="workflow-stage" aria-live="polite">
-            <div class="workflow-visual is-flow-visible" id="flow-visual" aria-label="流程产品界面预览"></div>
-            <div class="workflow-copy">
-              <p class="eyebrow" id="flow-label">Step 01</p>
-              <h3 id="flow-title-dynamic">先让系统理解本次作业</h3>
-              <p id="flow-copy-dynamic">
-                先识别空白题目与答案册，产出题框与评分标准草稿，避免盲判学生作答。
-              </p>
-              <div class="flow-tags" id="flow-tags">
-                <span>题框 bbox</span><span>答案解析</span><span>Rubric 草稿</span>
-              </div>
+          <div class="story-connector" aria-hidden="true">
+            <svg width="40" height="24" viewBox="0 0 40 24" fill="none"><path d="M0 12h32m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <div class="story-phase" data-phase="1">
+            <div class="story-phase-head">
+              <span class="story-phase-badge">课后</span>
+              <h3>拍学生作业，AI 自动批改</h3>
+              <p>乱序采集、自动识别姓名、切题判分、低置信进复核——教师只需确认异常。</p>
+            </div>
+            <div class="story-phase-visual">
+              <div class="workflow-visual is-flow-visible" id="flow-visual-1" aria-label="课后产品预览"></div>
+            </div>
+            <div class="story-phase-tags" id="flow-tags-1">
+              <span>多区域切分</span><span>公式识别</span><span>规则优先</span>
+            </div>
+          </div>
+
+          <div class="story-connector" aria-hidden="true">
+            <svg width="40" height="24" viewBox="0 0 40 24" fill="none"><path d="M0 12h32m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <div class="story-phase" data-phase="2">
+            <div class="story-phase-head">
+              <span class="story-phase-badge">课堂</span>
+              <h3>一人一评价，学情回到课堂</h3>
+              <p>错因分析、丢分点排名、讲评顺序与变式练习，直接进入希沃白板与飞书存档。</p>
+            </div>
+            <div class="story-phase-visual">
+              <div class="workflow-visual is-flow-visible" id="flow-visual-2" aria-label="课堂产品预览"></div>
+            </div>
+            <div class="story-phase-tags" id="flow-tags-2">
+              <span>希沃白板</span><span>变式练习</span><span>飞书 Base</span>
             </div>
           </div>
         </div>
