@@ -2336,6 +2336,42 @@ a { color: inherit; }
   .svc-act-ms { text-align: left; }
 }
 
+/* ========== 工作台默认演示路径（高中数学优先） ========== */
+.demo-path-primary {
+  border-color: rgba(0, 169, 157, 0.35);
+  background: linear-gradient(135deg, rgba(0, 169, 157, 0.08), rgba(255, 255, 255, 0.92));
+  box-shadow: 0 8px 20px rgba(0, 169, 157, 0.08);
+}
+
+.mixed-import-more {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(16, 32, 42, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.mixed-import-more summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted, #5a6a74);
+  list-style: none;
+}
+
+.mixed-import-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.mixed-import-more summary::before {
+  content: "▸ ";
+  color: var(--teal, #00a99d);
+}
+
+.mixed-import-more[open] summary::before {
+  content: "▾ ";
+}
+
 /* ========== 高中数学 · 公式双存档 / 框选 / 四能力 ========== */
 .math-fallback {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

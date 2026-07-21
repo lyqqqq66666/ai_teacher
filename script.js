@@ -411,6 +411,95 @@ demoFeatureButtons.forEach((button) => {
   button.addEventListener("click", () => setDemoFeature(feature));
 });
 
+function resolveAssetUrl(src) {
+  if (!src) return "";
+  try {
+    return new URL(src, window.location.href).href;
+  } catch {
+    return src;
+  }
+}
+
+function setDemoSample(button) {
+  if (!button) return;
+
+  const rawSrc =
+    button.getAttribute("data-demo-src") ||
+    button.dataset.demoSrc ||
+    "";
+  const alt =
+    button.getAttribute("data-demo-alt") ||
+    button.dataset.demoAlt ||
+    "作业样例";
+  const label =
+    button.getAttribute("title") ||
+    button.textContent.replace(/\s+/g, " ").trim() ||
+    alt;
+  // 用站点根路径，避免相对路径在某些打开方式下解析错
+  const nextSrc = resolveAssetUrl(rawSrc.startsWith("/") ? rawSrc : `/${rawSrc.replace(/^\.\//, "")}`);
+
+  const img =
+    document.getElementById("demo-paper-img") ||
+    document.querySelector(".demo-paper-wrap img");
+  const paperWrap = document.querySelector(".demo-paper-wrap");
+  const badge = document.getElementById("demo-sample-badge");
+
+  if (img && nextSrc) {
+    if (paperWrap) paperWrap.classList.add("is-switching");
+
+    img.alt = alt;
+    img.setAttribute("data-active-sample", button.getAttribute("data-demo-sample") || "");
+
+    // 同步立即换图（不再依赖 rAF，避免“点了没反应”的观感）
+    const bust = `${nextSrc}${nextSrc.includes("?") ? "&" : "?"}t=${Date.now()}`;
+    img.onload = () => {
+      if (paperWrap) paperWrap.classList.remove("is-switching");
+    };
+    img.onerror = () => {
+      // 回退无缓存戳路径
+      img.onerror = null;
+      img.src = nextSrc;
+      if (paperWrap) paperWrap.classList.remove("is-switching");
+    };
+    img.src = bust;
+
+    // 保险：若浏览器未触发 load（缓存命中），短时去掉切换态
+    window.setTimeout(() => {
+      if (paperWrap) paperWrap.classList.remove("is-switching");
+    }, 280);
+  }
+
+  if (badge) badge.textContent = label;
+
+  document.querySelectorAll("[data-demo-sample]").forEach((item) => {
+    item.classList.toggle("active", item === button);
+  });
+}
+
+// 暴露到全局，便于调试与内联调用
+window.setDemoSample = setDemoSample;
+
+function bindDemoSampleClicks() {
+  const demoSidebar = document.querySelector(".demo-sidebar");
+  if (!demoSidebar) return;
+
+  // 每个按钮直接绑 click，比委托更稳
+  demoSidebar.querySelectorAll("[data-demo-sample]").forEach((button) => {
+    if (button.dataset.boundSampleClick === "1") return;
+    button.dataset.boundSampleClick = "1";
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setDemoSample(button);
+    });
+  });
+
+  demoSidebar.dataset.boundSample = "1";
+}
+
+bindDemoSampleClicks();
+document.addEventListener("DOMContentLoaded", bindDemoSampleClicks);
+
 let lastScrollY = window.scrollY;
 
 function updateHeaderState() {

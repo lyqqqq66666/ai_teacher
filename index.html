@@ -53,7 +53,6 @@
       </section>
 
       <section id="why" class="section why-section reveal-block" aria-labelledby="why-title">
-        <div class="section-kicker">01 · Why</div>
         <div class="split-lead">
           <div>
             <p class="eyebrow">为何需要</p>
@@ -68,17 +67,17 @@
           <article>
             <strong>乱序</strong>
             <h3>先确认是谁的作业</h3>
-            <p>姓名栏、封面、试卷头都可识别；低置信必须人工确认。</p>
+            <p>姓名栏与封面可识别；低置信必须人工确认。</p>
           </article>
           <article>
             <strong>非标</strong>
             <h3>先切出可判分的题</h3>
-            <p>双栏、斜拍、跨区作答——完整切题，而不是整页横条。</p>
+            <p>双栏、斜拍、跨区——完整切题，不做整页横条。</p>
           </article>
           <article>
             <strong>证据</strong>
             <h3>先留证据再给建议分</h3>
-            <p>原图、OCR、步骤分与置信度一并呈现，老师做最终裁决。</p>
+            <p>原图、步骤分与置信度一并呈现，老师做最终裁决。</p>
           </article>
         </div>
 
@@ -90,7 +89,6 @@
       </section>
 
       <section id="how" class="section how-section reveal-block" aria-labelledby="how-title">
-        <div class="section-kicker">02 · How</div>
         <div class="split-lead">
           <div>
             <p class="eyebrow">怎么做成</p>
@@ -138,7 +136,7 @@
         <div class="demo-copy">
           <p class="eyebrow">可试用</p>
           <h2 id="demo-title">真实作业样例，直接进工作台验证。</h2>
-          <p class="lead-one-liner">切题、证据、建议分与学情——在界面里点一遍比读十段说明更清楚。</p>
+          <p class="lead-one-liner">切题、证据、建议分与学情——点一遍比读十段说明更清楚。</p>
           <a class="button primary" href="./workbench/">打开测试工作台</a>
           <div class="capability-grid" aria-label="工作台能力">
             <button class="capability-card active" type="button" data-demo-feature="split">
@@ -162,19 +160,61 @@
               <strong>希沃智教π 工作台</strong>
             </div>
             <div class="demo-product">
-              <aside class="demo-sidebar">
+              <aside class="demo-sidebar" aria-label="样例任务">
                 <strong>样例任务</strong>
-                <button class="active" type="button">高中数学 · 空间几何</button>
-                <button type="button">小学数学 · 口算订正</button>
-                <button type="button">高中语文 · 主观题</button>
-                <button type="button">奥数 · 多步骤题</button>
+                <button
+                  class="active"
+                  type="button"
+                  data-demo-sample="hs_math"
+                  data-demo-src="/workbench/public/thumbs/hs_math/IMG_0347.jpg"
+                  data-demo-alt="高中数学作业样例"
+                  title="高中数学 · 空间几何"
+                  onclick="window.setDemoSample && window.setDemoSample(this); return false;"
+                >
+                  高中数学 · 空间几何
+                </button>
+                <button
+                  type="button"
+                  data-demo-sample="math"
+                  data-demo-src="/workbench/public/thumbs/math/IMG_0281.jpg"
+                  data-demo-alt="小学数学作业样例"
+                  title="小学数学 · 口算订正"
+                  onclick="window.setDemoSample && window.setDemoSample(this); return false;"
+                >
+                  小学数学 · 口算订正
+                </button>
+                <button
+                  type="button"
+                  data-demo-sample="hs_chinese"
+                  data-demo-src="/workbench/public/thumbs/hs_chinese/IMG_0305.jpg"
+                  data-demo-alt="高中语文作业样例"
+                  title="高中语文 · 主观题"
+                  onclick="window.setDemoSample && window.setDemoSample(this); return false;"
+                >
+                  高中语文 · 主观题
+                </button>
+                <button
+                  type="button"
+                  data-demo-sample="olympiad"
+                  data-demo-src="/workbench/public/thumbs/olympiad/IMG_0298.jpg"
+                  data-demo-alt="奥数作业样例"
+                  title="奥数 · 多步骤题"
+                  onclick="window.setDemoSample && window.setDemoSample(this); return false;"
+                >
+                  奥数 · 多步骤题
+                </button>
               </aside>
               <main class="demo-canvas">
                 <div class="demo-paper-wrap" data-feature-region="split">
-                  <img src="./workbench/public/thumbs/hs_math/IMG_0347.jpg" alt="高中数学作业样例" />
+                  <img
+                    id="demo-paper-img"
+                    src="/workbench/public/thumbs/hs_math/IMG_0347.jpg"
+                    alt="高中数学作业样例"
+                  />
                   <span class="demo-bbox bbox-one"></span>
                   <span class="demo-bbox bbox-two"></span>
                   <span class="demo-bbox bbox-three"></span>
+                  <span class="demo-sample-badge" id="demo-sample-badge">高中数学 · 空间几何</span>
                 </div>
                 <div class="demo-mini-panels">
                   <article data-feature-region="crop">
@@ -206,7 +246,6 @@
       </section>
 
       <section id="fit" class="section fit-section reveal-block" aria-labelledby="fit-title">
-        <div class="section-kicker">03 · Fit</div>
         <div class="split-lead">
           <div>
             <p class="eyebrow">如何落地</p>
@@ -250,7 +289,7 @@
           <article>
             <span>易课堂</span>
             <h3>变式练习</h3>
-            <p>讲完继续练，形成巩固。</p>
+            <p>讲完继续练，巩固薄弱点。</p>
           </article>
           <article>
             <span>飞书 Base</span>
@@ -282,6 +321,6 @@
       <span>让纸质作业的「评」，自然回到希沃课堂。</span>
     </footer>
 
-    <script src="./script.js"></script>
+    <script src="./script.js?v=demo-sample-5"></script>
   </body>
 </html>

@@ -775,7 +775,8 @@
   }
 
   function newDraft(partial = {}) {
-    const subjectId = partial.subjectId || "math";
+    // 默认走高中数学四能力主演示路径
+    const subjectId = partial.subjectId || "hs_math";
     const meta = subjectMeta(subjectId);
     const cls = getActiveClass();
     return {
@@ -2046,21 +2047,27 @@
     root.innerHTML = `
       <div class="card focus-card">
         <div class="card-bd">
-          <p class="focus-lead">先选批改方式与学科。若题目和答案混在一起拍，可用下方「混拍一键整理」或「高中数学四能力」演示。</p>
+          <p class="focus-lead">推荐路径：点下方主按钮，一键跑通高中数学「框选 → 字符化 → 制答 → 对齐」。其他学科与模式可在下方再选。</p>
 
-          <div class="mixed-import-card">
+          <div class="mixed-import-card demo-path-primary">
             <div>
-              <strong>混拍一键整理 / 四能力演示</strong>
+              <strong>推荐演示 · 高中数学四能力</strong>
               <p class="small muted" style="margin:6px 0 0">
-                语文：题目+答案+作业自动分类。数学：框选、公式字符化、智能制答、乱序题答对齐。
+                20 页讲义/检测/答案混拍：①框选切题 ②公式标准字符化 ③智能制答 ④乱序题答对齐。
               </p>
             </div>
             <div class="mixed-import-actions">
-              <button type="button" class="btn primary" id="btn-mixed-hs">演示：高中语文 44 页</button>
-              <button type="button" class="btn primary" id="btn-mixed-math">演示：高中数学四能力</button>
-              <button type="button" class="btn" id="btn-mixed-info">算法说明</button>
+              <button type="button" class="btn primary" id="btn-mixed-math">一键演示 · 高中数学四能力</button>
             </div>
           </div>
+
+          <details class="mixed-import-more">
+            <summary>其他演示与说明</summary>
+            <div class="mixed-import-actions" style="margin-top:10px">
+              <button type="button" class="btn" id="btn-mixed-hs">演示：高中语文 44 页</button>
+              <button type="button" class="btn" id="btn-mixed-info">算法说明</button>
+            </div>
+          </details>
 
           <div class="focus-section mt-16">
             <div class="focus-section-label">批改模式</div>
