@@ -389,15 +389,31 @@ function renderTeachColPanel(item) {
     </div>`;
 }
 
-/** 三栏紧凑预览（左中右同一板块用），避免大控制台在窄栏里挤爆 */
+/**
+ * 扫描框：按百分比定位在照片上的识别区域
+ * frame: { left, top, width, height, tone?: "teal"|"amber" }
+ */
+function renderScanFrames(frames) {
+  if (!frames || !frames.length) return "";
+  return frames
+    .map((f) => {
+      const tone = f.tone === "amber" ? " is-amber" : "";
+      return `<span class="col-frame${tone}" style="left:${f.left};top:${f.top};width:${f.width};height:${f.height}" aria-hidden="true"></span>`;
+    })
+    .join("");
+}
+
+/** 三栏紧凑预览（左中右同一板块用）；扫描框挂在与照片同比例的 stage 上，避免 letterbox 错位 */
 function renderColPanel(item, options = {}) {
-  if (item.visualType === "teaching") {
+  if (item.visualType === "teaching" || item.kind === "teach") {
     return renderTeachColPanel(item);
   }
 
-  const title = options.barTitle || item.screenTitle || "产品预览";
-  const points = (item.agentEvents || []).slice(0, 2);
-  const frameClass = item.visualType === "review" ? "col-frame is-amber" : "col-frame";
+  const title = options.barTitle || item.screenTitle || item.barTitle || "产品预览";
+  const points = (item.agentEvents || item.events || []).slice(0, 2);
+  const frames = item.scanFrames || item.frames || [];
+  const alt = item.imageAlt || "";
+  const aspect = item.imageAspect || "4 / 3";
 
   const pointsHtml = points
     .map(
@@ -410,13 +426,20 @@ function renderColPanel(item, options = {}) {
     )
     .join("");
 
+  const frameHtml =
+    frames.length > 0
+      ? renderScanFrames(frames)
+      : `<span class="col-frame${item.visualType === "review" ? " is-amber" : ""}" aria-hidden="true"></span>`;
+
   return `
     <div class="col-panel">
       <div class="col-panel-bar"><i></i><i></i><i></i><strong>${title}</strong></div>
       <div class="col-panel-body">
-        <div class="col-panel-media">
-          <img src="${item.previewImage}" alt="" loading="lazy" />
-          <span class="${frameClass}" aria-hidden="true"></span>
+        <div class="col-panel-media col-panel-media--scan">
+          <div class="col-scan-shot" style="aspect-ratio: ${aspect}">
+            <img src="${item.previewImage}" alt="${alt}" loading="eager" decoding="async" />
+            ${frameHtml}
+          </div>
         </div>
         <ul class="col-panel-points">${pointsHtml}</ul>
       </div>
@@ -424,7 +447,6 @@ function renderColPanel(item, options = {}) {
 }
 
 function panelHtmlForItem(item) {
-  // 解决方案区始终用紧凑三栏卡；大控制台渲染保留供其它区域如需复用
   return renderColPanel(item);
 }
 
@@ -432,20 +454,17 @@ function renderFlowVisual(targetId, item) {
   const container = document.getElementById(targetId);
   if (!container || !item) return;
 
-  // 直接替换内容，不再先 opacity:0。旧逻辑 remove is-flow-visible 会整块「消失」一帧。
+  // 静态写入：同目标只渲染一次，禁止反复 innerHTML / 换图
+  const staticKey =
+    item.previewImage ||
+    (item.teachingBrief ? "teach-brief" : item.visualType || "panel");
+  if (container.dataset.staticRendered === "1" && container.dataset.staticSrc === staticKey) {
+    return;
+  }
   container.classList.add("is-flow-visible");
   container.innerHTML = panelHtmlForItem(item);
-
-  container.querySelectorAll("img").forEach((img) => {
-    if (img.complete) return;
-    img.style.opacity = "0";
-    const reveal = () => {
-      img.style.transition = "opacity 220ms ease";
-      img.style.opacity = "1";
-    };
-    img.addEventListener("load", reveal, { once: true });
-    img.addEventListener("error", reveal, { once: true });
-  });
+  container.dataset.staticRendered = "1";
+  container.dataset.staticSrc = staticKey;
 }
 
 const mapData = {
@@ -517,93 +536,96 @@ const navObserver = new IntersectionObserver(
 
 document.querySelectorAll("main section[id]").forEach((section) => navObserver.observe(section));
 
-// 同一板块三栏：左拍题目 / 中拍全班 / 右一人一评价
-const storyPhases = [
-  { visualId: "flow-visual-0", tagsId: "flow-tags-0", indices: [0, 1] }, // 左：拍题+Rubric
-  { visualId: "flow-visual-1", tagsId: "flow-tags-1", indices: [2, 3, 4] }, // 中：认人+批改+复核
-  { visualId: "flow-visual-2", tagsId: "flow-tags-2", indices: [5] }, // 右：讲评输出
-];
-
-const storySubIdx = storyPhases.map(() => 0);
 const prefersReducedMotion =
   typeof window.matchMedia === "function" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function preloadFlowImages() {
-  const seen = new Set();
-  flowData.forEach((item) => {
-    if (!item.previewImage || seen.has(item.previewImage)) return;
-    seen.add(item.previewImage);
-    const img = new Image();
-    img.src = item.previewImage;
-  });
-}
-
-function renderStoryPhase(phaseIdx, subIdx) {
-  const phase = storyPhases[phaseIdx];
-  if (!phase) return;
-  const dataIdx = phase.indices[subIdx] ?? phase.indices[0];
-  const item = flowData[dataIdx];
-  if (!item) return;
-  storySubIdx[phaseIdx] = subIdx;
-  renderFlowVisual(phase.visualId, item);
-
-  const tagsEl = document.getElementById(phase.tagsId);
-  if (tagsEl) {
-    tagsEl.innerHTML = item.tags.map((tag) => `<span>${tag}</span>`).join("");
-  }
-}
-
-// 初始：每阶段固定展示首帧，再启动轻量轮播
-preloadFlowImages();
-storyPhases.forEach((_, idx) => renderStoryPhase(idx, 0));
-
-const howSection = document.getElementById("how");
-let storyInView = false;
-let storyTimer = null;
-const STORY_TICK_MS = 5200;
-
-function advanceStoryFrames() {
-  // 每个有多子步骤的阶段各自前进一格，单步阶段不动，减少「整页一起变」的晃感
-  storyPhases.forEach((phase, idx) => {
-    if (phase.indices.length <= 1) return;
-    const next = (storySubIdx[idx] + 1) % phase.indices.length;
-    renderStoryPhase(idx, next);
-  });
-}
-
-function startStoryTimer() {
-  if (prefersReducedMotion || storyTimer != null) return;
-  storyTimer = window.setInterval(() => {
-    if (!storyInView || document.hidden) return;
-    advanceStoryFrames();
-  }, STORY_TICK_MS);
-}
-
-function stopStoryTimer() {
-  if (storyTimer == null) return;
-  window.clearInterval(storyTimer);
-  storyTimer = null;
-}
-
-if (howSection && !prefersReducedMotion) {
-  const storyViewObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        storyInView = entry.isIntersecting && entry.intersectionRatio > 0.12;
-        if (storyInView) startStoryTimer();
-        else stopStoryTimer();
-      });
+/**
+ * 解决方案三栏：静态一帧，禁止轮播 / 定时换图（避免交替闪烁）
+ * 左：空白卷（题框识别） / 中：作答卷（过程框） / 右：学情卡（无图片轮播）
+ * 扫描框百分比按实拍对开课本估：中缝约 45%–51%，最右「听课记录」栏不画框
+ */
+const storyColumns = [
+  {
+    visualId: "flow-visual-0",
+    tagsId: "flow-tags-0",
+    tags: ["题框 bbox", "例题区域", "图示识别"],
+    item: {
+      barTitle: "采集 · 空白题目",
+      screenTitle: "采集 · 空白题目",
+      previewImage: "./assets/story-blank-page.jpg",
+      imageAlt: "空白题目册展开页（含答案区域）",
+      imageAspect: "1448 / 1086",
+      events: [
+        ["OCR Agent", "题目区域识别完成", "对开页 6 个题框"],
+        ["Rubric Agent", "生成评分标准草稿", "等待教师确认"],
+      ],
+      // 空白卷：左页四块题区 + 右页两块例题/训练；避开中缝与最右听课记录栏
+      scanFrames: [
+        { left: "3.5%", top: "4%", width: "40%", height: "24%" }, // 例1 线面垂直 + 示意图
+        { left: "3.5%", top: "30%", width: "40%", height: "15%" }, // 例2 位置关系
+        { left: "3.5%", top: "47%", width: "40%", height: "18%" }, // 线面角公式区
+        { left: "3.5%", top: "67%", width: "40%", height: "27%" }, // 平面平行 + 知识梳理
+        { left: "49%", top: "3.5%", width: "35%", height: "42%" }, // 例3 正方体题干与图
+        { left: "49%", top: "48%", width: "35%", height: "42%" }, // 跟踪训练3 棱柱
+      ],
     },
-    { threshold: [0, 0.12, 0.25] }
-  );
-  storyViewObserver.observe(howSection);
+  },
+  {
+    visualId: "flow-visual-1",
+    tagsId: "flow-tags-1",
+    tags: ["手写过程", "切题判分", "证据框"],
+    item: {
+      barTitle: "采集 · 全班作答",
+      screenTitle: "采集 · 全班作答",
+      previewImage: "./assets/story-answer-page.jpg",
+      imageAlt: "学生手写作答过程页",
+      imageAspect: "1344 / 1792",
+      events: [
+        ["QuestionSplit", "作答区已切分", "过程与图示绑定"],
+        ["Grading Agent", "步骤分建议已出", "低置信进复核"],
+      ],
+      // 作答卷：框住手写过程；琥珀框标示重点判分/待复核步骤；避开最右空白栏
+      scanFrames: [
+        { left: "4%", top: "5%", width: "43%", height: "28%", tone: "amber" }, // 左上 例1 手写推导
+        { left: "4%", top: "35%", width: "43%", height: "14%" }, // 例2 手写
+        { left: "4%", top: "51%", width: "43%", height: "18%" }, // 线面角旁手写
+        { left: "4%", top: "72%", width: "43%", height: "21%", tone: "amber" }, // 平面平行手写
+        { left: "52%", top: "3%", width: "33%", height: "38%" }, // 右上 例3 建系/法向量
+        { left: "52%", top: "43%", width: "33%", height: "45%", tone: "amber" }, // 跟踪训练3 完整过程
+      ],
+    },
+  },
+  {
+    visualId: "flow-visual-2",
+    tagsId: "flow-tags-2",
+    tags: ["希沃白板", "变式练习", "飞书 Base"],
+    item: flowData[5],
+  },
+];
+
+function preloadStoryImages() {
+  storyColumns.forEach((col) => {
+    const src = col.item && col.item.previewImage;
+    if (!src) return;
+    const img = new Image();
+    img.src = src;
+  });
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) stopStoryTimer();
-  else if (storyInView) startStoryTimer();
-});
+function renderStoryColumns() {
+  storyColumns.forEach((col) => {
+    renderFlowVisual(col.visualId, col.item);
+    const tagsEl = document.getElementById(col.tagsId);
+    if (tagsEl && col.tags) {
+      tagsEl.innerHTML = col.tags.map((tag) => `<span>${tag}</span>`).join("");
+    }
+  });
+}
+
+// 仅渲染一次：无 setInterval / 无 phase 轮播 / 无换图
+preloadStoryImages();
+renderStoryColumns();
 
 mapButtons.forEach((button) => {
   const key = button.dataset.mapNode;
