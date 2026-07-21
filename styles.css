@@ -1108,6 +1108,15 @@ h3 {
 
 .demo-copy h2 {
   margin-bottom: 22px;
+  /* 左侧标题单行展示，避免「样 / 例」被拆开 */
+  white-space: nowrap;
+  font-size: clamp(28px, 3.2vw, 48px);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.demo-copy .lead-one-liner {
+  max-width: 28em;
 }
 
 .demo-preview {
