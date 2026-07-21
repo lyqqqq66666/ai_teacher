@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Newsreader:opsz,wght@6..72,500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=stable-ui-1" />
+    <link rel="stylesheet" href="./styles.css?v=story-triptych-1" />
     <link rel="stylesheet" href="./problems.css?v=inline-1" />
   </head>
   <body>
@@ -65,56 +65,60 @@
           <p class="lead-one-liner">空白题目答案 + 全班学生过程 = 一人一评价</p>
         </div>
 
-        <div class="story-flow" aria-label="产品故事线">
-          <div class="story-phase" data-phase="0">
-            <div class="story-phase-head">
-              <span class="story-phase-badge">课前</span>
-              <h3>教师拍题，AI 建标准</h3>
-              <p>拍空白题目与答案册，AI 自动生成题框与评分标准草稿，教师确认后即可批量批改。</p>
+        <!-- 同一板块内左 / 中 / 右三栏，不再拆成三个大段 -->
+        <div class="story-board" aria-label="产品路径：拍题目 → 拍全班过程 → 一人一评价">
+          <article class="story-col" data-phase="0" data-col="left">
+            <header class="story-col-head">
+              <span class="story-col-step">01</span>
+              <span class="story-col-badge">拍题目</span>
+              <h3>空白题 + 答案册</h3>
+              <p>教师拍题，AI 建题框与评分标准草稿。</p>
+            </header>
+            <div class="story-col-visual">
+              <div class="workflow-visual is-flow-visible" id="flow-visual-0" aria-label="拍题目预览"></div>
             </div>
-            <div class="story-phase-visual">
-              <div class="workflow-visual is-flow-visible" id="flow-visual-0" aria-label="课前产品预览"></div>
-            </div>
-            <div class="story-phase-tags" id="flow-tags-0">
+            <div class="story-col-tags" id="flow-tags-0">
               <span>题框 bbox</span><span>答案解析</span><span>Rubric 草稿</span>
             </div>
+          </article>
+
+          <div class="story-col-connector" aria-hidden="true">
+            <span></span>
           </div>
 
-          <div class="story-connector" aria-hidden="true">
-            <svg width="40" height="24" viewBox="0 0 40 24" fill="none"><path d="M0 12h32m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <article class="story-col" data-phase="1" data-col="mid">
+            <header class="story-col-head">
+              <span class="story-col-step">02</span>
+              <span class="story-col-badge">拍全班</span>
+              <h3>乱序采集与批改</h3>
+              <p>认人、切题、判分；低置信进复核。</p>
+            </header>
+            <div class="story-col-visual">
+              <div class="workflow-visual is-flow-visible" id="flow-visual-1" aria-label="拍全班过程预览"></div>
+            </div>
+            <div class="story-col-tags" id="flow-tags-1">
+              <span>姓名匹配</span><span>切题判分</span><span>异常复核</span>
+            </div>
+          </article>
+
+          <div class="story-col-connector" aria-hidden="true">
+            <span></span>
           </div>
 
-          <div class="story-phase" data-phase="1">
-            <div class="story-phase-head">
-              <span class="story-phase-badge">课后</span>
-              <h3>拍学生作业，AI 自动批改</h3>
-              <p>乱序采集、自动识别姓名、切题判分、低置信进复核——教师只需确认异常。</p>
+          <article class="story-col" data-phase="2" data-col="right">
+            <header class="story-col-head">
+              <span class="story-col-step">03</span>
+              <span class="story-col-badge">一人一评价</span>
+              <h3>学情回到课堂</h3>
+              <p>丢分点、讲评顺序与变式练习回流。</p>
+            </header>
+            <div class="story-col-visual">
+              <div class="workflow-visual is-flow-visible" id="flow-visual-2" aria-label="一人一评价预览"></div>
             </div>
-            <div class="story-phase-visual">
-              <div class="workflow-visual is-flow-visible" id="flow-visual-1" aria-label="课后产品预览"></div>
-            </div>
-            <div class="story-phase-tags" id="flow-tags-1">
-              <span>多区域切分</span><span>公式识别</span><span>规则优先</span>
-            </div>
-          </div>
-
-          <div class="story-connector" aria-hidden="true">
-            <svg width="40" height="24" viewBox="0 0 40 24" fill="none"><path d="M0 12h32m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-
-          <div class="story-phase" data-phase="2">
-            <div class="story-phase-head">
-              <span class="story-phase-badge">课堂</span>
-              <h3>一人一评价，学情回到课堂</h3>
-              <p>错因分析、丢分点排名、讲评顺序与变式练习，直接进入希沃白板与飞书存档。</p>
-            </div>
-            <div class="story-phase-visual">
-              <div class="workflow-visual is-flow-visible" id="flow-visual-2" aria-label="课堂产品预览"></div>
-            </div>
-            <div class="story-phase-tags" id="flow-tags-2">
+            <div class="story-col-tags" id="flow-tags-2">
               <span>希沃白板</span><span>变式练习</span><span>飞书 Base</span>
             </div>
-          </div>
+          </article>
         </div>
       </section>
 
@@ -462,6 +466,6 @@
 
     <script src="./data/topic-brief.js"></script>
     <script src="./problems.js?v=inline-1"></script>
-    <script src="./script.js?v=stable-ui-1"></script>
+    <script src="./script.js?v=story-triptych-1"></script>
   </body>
 </html>

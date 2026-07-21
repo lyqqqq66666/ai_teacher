@@ -267,12 +267,61 @@ function renderTeachingPanel(item) {
   `;
 }
 
+/** 三栏紧凑预览（左中右同一板块用），避免大控制台在窄栏里挤爆 */
+function renderColPanel(item, options = {}) {
+  const title = options.barTitle || item.screenTitle || "产品预览";
+  const points = (item.agentEvents || []).slice(0, 2);
+  const frameClass = item.visualType === "review" ? "col-frame is-amber" : "col-frame";
+  const hasImage = Boolean(item.previewImage) && item.visualType !== "teaching";
+
+  if (!hasImage) {
+    const chips = (item.tags || []).slice(0, 4)
+      .map((t) => `<em>${t}</em>`)
+      .join("");
+    const lines = (item.evidenceItems || []).slice(0, 3)
+      .map((t, i) => `<li>${i + 1}. ${t}</li>`)
+      .join("");
+    return `
+      <div class="col-panel col-panel--text">
+        <div class="col-panel-bar"><i></i><i></i><i></i><strong>${title}</strong></div>
+        <div class="col-panel-body">
+          <div class="col-panel-summary">
+            <span>${item.agent || "输出"}</span>
+            <strong>${item.screenCopy || item.title || ""}</strong>
+            <ol>${lines}</ol>
+            <div class="col-chip-row">${chips}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const pointsHtml = points
+    .map(
+      ([agent, t, detail]) => `
+      <li>
+        <span>${agent}</span>
+        <strong>${t}</strong>
+        <small>${detail}</small>
+      </li>`
+    )
+    .join("");
+
+  return `
+    <div class="col-panel">
+      <div class="col-panel-bar"><i></i><i></i><i></i><strong>${title}</strong></div>
+      <div class="col-panel-body">
+        <div class="col-panel-media">
+          <img src="${item.previewImage}" alt="" loading="lazy" />
+          <span class="${frameClass}" aria-hidden="true"></span>
+        </div>
+        <ul class="col-panel-points">${pointsHtml}</ul>
+      </div>
+    </div>`;
+}
+
 function panelHtmlForItem(item) {
-  if (item.visualType === "rubric") return renderRubricPanel(item);
-  if (item.visualType === "identity") return renderIdentityPanel(item);
-  if (item.visualType === "review") return renderReviewPanel(item);
-  if (item.visualType === "teaching") return renderTeachingPanel(item);
-  return renderScanPanel(item);
+  // 解决方案区始终用紧凑三栏卡；大控制台渲染保留供其它区域如需复用
+  return renderColPanel(item);
 }
 
 function renderFlowVisual(targetId, item) {
@@ -283,7 +332,6 @@ function renderFlowVisual(targetId, item) {
   container.classList.add("is-flow-visible");
   container.innerHTML = panelHtmlForItem(item);
 
-  // 图片加载前用背景占位，避免空白闪一下
   container.querySelectorAll("img").forEach((img) => {
     if (img.complete) return;
     img.style.opacity = "0";
@@ -365,11 +413,11 @@ const navObserver = new IntersectionObserver(
 
 document.querySelectorAll("main section[id]").forEach((section) => navObserver.observe(section));
 
-// 三阶段故事线渲染（各阶段只轮播「自己」的子步骤，避免整页同时换内容）
+// 同一板块三栏：左拍题目 / 中拍全班 / 右一人一评价
 const storyPhases = [
-  { visualId: "flow-visual-0", tagsId: "flow-tags-0", indices: [0, 1] }, // 课前
-  { visualId: "flow-visual-1", tagsId: "flow-tags-1", indices: [2, 3, 4] }, // 课后
-  { visualId: "flow-visual-2", tagsId: "flow-tags-2", indices: [5] }, // 课堂
+  { visualId: "flow-visual-0", tagsId: "flow-tags-0", indices: [0, 1] }, // 左：拍题+Rubric
+  { visualId: "flow-visual-1", tagsId: "flow-tags-1", indices: [2, 3, 4] }, // 中：认人+批改+复核
+  { visualId: "flow-visual-2", tagsId: "flow-tags-2", indices: [5] }, // 右：讲评输出
 ];
 
 const storySubIdx = storyPhases.map(() => 0);
