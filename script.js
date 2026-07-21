@@ -267,24 +267,33 @@ function renderTeachingPanel(item) {
   `;
 }
 
+function panelHtmlForItem(item) {
+  if (item.visualType === "rubric") return renderRubricPanel(item);
+  if (item.visualType === "identity") return renderIdentityPanel(item);
+  if (item.visualType === "review") return renderReviewPanel(item);
+  if (item.visualType === "teaching") return renderTeachingPanel(item);
+  return renderScanPanel(item);
+}
+
 function renderFlowVisual(targetId, item) {
   const container = document.getElementById(targetId);
-  if (!container) return;
-  container.classList.remove("is-flow-visible");
-  void container.offsetHeight; // 强制 reflow，确保过渡生效
-  container.classList.add("is-flow-visible");
+  if (!container || !item) return;
 
-  if (item.visualType === "rubric") {
-    container.innerHTML = renderRubricPanel(item);
-  } else if (item.visualType === "identity") {
-    container.innerHTML = renderIdentityPanel(item);
-  } else if (item.visualType === "review") {
-    container.innerHTML = renderReviewPanel(item);
-  } else if (item.visualType === "teaching") {
-    container.innerHTML = renderTeachingPanel(item);
-  } else {
-    container.innerHTML = renderScanPanel(item);
-  }
+  // 直接替换内容，不再先 opacity:0。旧逻辑 remove is-flow-visible 会整块「消失」一帧。
+  container.classList.add("is-flow-visible");
+  container.innerHTML = panelHtmlForItem(item);
+
+  // 图片加载前用背景占位，避免空白闪一下
+  container.querySelectorAll("img").forEach((img) => {
+    if (img.complete) return;
+    img.style.opacity = "0";
+    const reveal = () => {
+      img.style.transition = "opacity 220ms ease";
+      img.style.opacity = "1";
+    };
+    img.addEventListener("load", reveal, { once: true });
+    img.addEventListener("error", reveal, { once: true });
+  });
 }
 
 const mapData = {
@@ -329,9 +338,12 @@ const revealObserver = new IntersectionObserver(
       entry.target.classList.add("is-visible");
       entry.target.querySelectorAll("[data-count]").forEach(animateCount);
       if (entry.target.matches("[data-count]")) animateCount(entry.target);
+      // 只显现一次，避免长区块反复进出视口时闪动
+      revealObserver.unobserve(entry.target);
     });
   },
-  { threshold: 0.16 }
+  // 长 section 用低阈值 + 上沿提前触发，避免「半屏还是空白」
+  { threshold: 0.04, rootMargin: "0px 0px -6% 0px" }
 );
 
 document.querySelectorAll(".reveal, .reveal-block, [data-count]").forEach((item) => {
@@ -353,15 +365,27 @@ const navObserver = new IntersectionObserver(
 
 document.querySelectorAll("main section[id]").forEach((section) => navObserver.observe(section));
 
-// 三阶段故事线渲染
+// 三阶段故事线渲染（各阶段只轮播「自己」的子步骤，避免整页同时换内容）
 const storyPhases = [
-  { visualId: 'flow-visual-0', tagsId: 'flow-tags-0', indices: [0, 1] },   // 课前：拍题+确认Rubric
-  { visualId: 'flow-visual-1', tagsId: 'flow-tags-1', indices: [2, 3, 4] }, // 课后：拍作答+批改+复核
-  { visualId: 'flow-visual-2', tagsId: 'flow-tags-2', indices: [5] },        // 课堂：讲评
+  { visualId: "flow-visual-0", tagsId: "flow-tags-0", indices: [0, 1] }, // 课前
+  { visualId: "flow-visual-1", tagsId: "flow-tags-1", indices: [2, 3, 4] }, // 课后
+  { visualId: "flow-visual-2", tagsId: "flow-tags-2", indices: [5] }, // 课堂
 ];
 
-let currentPhaseIdx = 0;
-let currentSubIdx = 0;
+const storySubIdx = storyPhases.map(() => 0);
+const prefersReducedMotion =
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function preloadFlowImages() {
+  const seen = new Set();
+  flowData.forEach((item) => {
+    if (!item.previewImage || seen.has(item.previewImage)) return;
+    seen.add(item.previewImage);
+    const img = new Image();
+    img.src = item.previewImage;
+  });
+}
 
 function renderStoryPhase(phaseIdx, subIdx) {
   const phase = storyPhases[phaseIdx];
@@ -369,6 +393,7 @@ function renderStoryPhase(phaseIdx, subIdx) {
   const dataIdx = phase.indices[subIdx] ?? phase.indices[0];
   const item = flowData[dataIdx];
   if (!item) return;
+  storySubIdx[phaseIdx] = subIdx;
   renderFlowVisual(phase.visualId, item);
 
   const tagsEl = document.getElementById(phase.tagsId);
@@ -377,19 +402,56 @@ function renderStoryPhase(phaseIdx, subIdx) {
   }
 }
 
-// 初始渲染
-renderStoryPhase(0, 0);
-renderStoryPhase(1, 0);
-renderStoryPhase(2, 0);
+// 初始：每阶段固定展示首帧，再启动轻量轮播
+preloadFlowImages();
+storyPhases.forEach((_, idx) => renderStoryPhase(idx, 0));
 
-// 自动轮播：每个阶段内子步骤轮播
-let storyTimer = window.setInterval(() => {
-  currentSubIdx = (currentSubIdx + 1) % storyPhases[currentPhaseIdx].indices.length;
-  if (currentSubIdx === 0) {
-    currentPhaseIdx = (currentPhaseIdx + 1) % storyPhases.length;
-  }
-  renderStoryPhase(currentPhaseIdx, currentSubIdx);
-}, 4200);
+const howSection = document.getElementById("how");
+let storyInView = false;
+let storyTimer = null;
+const STORY_TICK_MS = 5200;
+
+function advanceStoryFrames() {
+  // 每个有多子步骤的阶段各自前进一格，单步阶段不动，减少「整页一起变」的晃感
+  storyPhases.forEach((phase, idx) => {
+    if (phase.indices.length <= 1) return;
+    const next = (storySubIdx[idx] + 1) % phase.indices.length;
+    renderStoryPhase(idx, next);
+  });
+}
+
+function startStoryTimer() {
+  if (prefersReducedMotion || storyTimer != null) return;
+  storyTimer = window.setInterval(() => {
+    if (!storyInView || document.hidden) return;
+    advanceStoryFrames();
+  }, STORY_TICK_MS);
+}
+
+function stopStoryTimer() {
+  if (storyTimer == null) return;
+  window.clearInterval(storyTimer);
+  storyTimer = null;
+}
+
+if (howSection && !prefersReducedMotion) {
+  const storyViewObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        storyInView = entry.isIntersecting && entry.intersectionRatio > 0.12;
+        if (storyInView) startStoryTimer();
+        else stopStoryTimer();
+      });
+    },
+    { threshold: [0, 0.12, 0.25] }
+  );
+  storyViewObserver.observe(howSection);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopStoryTimer();
+  else if (storyInView) startStoryTimer();
+});
 
 mapButtons.forEach((button) => {
   const key = button.dataset.mapNode;
@@ -503,19 +565,21 @@ bindDemoSampleClicks();
 document.addEventListener("DOMContentLoaded", bindDemoSampleClicks);
 
 let lastScrollY = window.scrollY;
+let headerTicking = false;
 
 function updateHeaderState() {
   if (!siteHeader) return;
   const currentY = window.scrollY;
   const isAtTop = currentY < 12;
-  const scrollingDown = currentY > lastScrollY;
+  // 不再根据滚动方向隐藏顶栏：hide/show 会改变可用视口高度，整页上下颤动。
   siteHeader.classList.toggle("is-at-top", isAtTop);
   siteHeader.classList.toggle("is-scrolled", currentY > 72);
-  siteHeader.classList.toggle("is-hidden", scrollingDown && currentY > 280);
+  siteHeader.classList.remove("is-hidden");
   lastScrollY = currentY;
 }
 
 function updateParallax() {
+  if (!parallaxItems.length || prefersReducedMotion) return;
   const viewport = window.innerHeight || 1;
   parallaxItems.forEach((item) => {
     const rect = item.getBoundingClientRect();
@@ -525,10 +589,22 @@ function updateParallax() {
   });
 }
 
-window.addEventListener("scroll", updateParallax, { passive: true });
-window.addEventListener("scroll", updateHeaderState, { passive: true });
-window.addEventListener("resize", updateParallax);
+function onScrollFrame() {
+  headerTicking = false;
+  updateHeaderState();
+  updateParallax();
+}
+
+function requestScrollUpdate() {
+  if (headerTicking) return;
+  headerTicking = true;
+  requestAnimationFrame(onScrollFrame);
+}
+
+window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+window.addEventListener("resize", requestScrollUpdate);
 
 setMapNode("client");
 setDemoFeature("split");
+updateHeaderState();
 updateParallax();
