@@ -271,7 +271,8 @@ function renderFlowVisual(targetId, item) {
   const container = document.getElementById(targetId);
   if (!container) return;
   container.classList.remove("is-flow-visible");
-  window.setTimeout(() => container.classList.add("is-flow-visible"), 30);
+  void container.offsetHeight; // 强制 reflow，确保过渡生效
+  container.classList.add("is-flow-visible");
 
   if (item.visualType === "rubric") {
     container.innerHTML = renderRubricPanel(item);
