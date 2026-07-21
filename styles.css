@@ -1833,6 +1833,21 @@ h3 {
   margin-bottom: 28px;
 }
 
+.how-head {
+  max-width: 1280px;
+  margin: 0 auto clamp(28px, 4vw, 48px);
+}
+
+.how-head h2 {
+  margin-bottom: 8px;
+}
+
+.how-head .lead-one-liner {
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.72;
+}
+
 .compact-chain {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
