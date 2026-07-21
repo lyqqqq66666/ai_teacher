@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>希沃智教π｜AI Native 作业批改与教学闭环系统</title>
+    <title>希沃智教π｜纸质作业的「评」回到课堂</title>
     <meta
       name="description"
-      content="希沃智教π面向视源股份命题，围绕教师纸质作业采集、AI 批改、学情诊断和希沃白板讲评形成教学闭环。"
+      content="希沃智教π：教师端采集纸质作业，AI 完成切题、识别与有证据的判分，结果回流希沃讲评与飞书复核。"
     />
     <link rel="icon" href="./assets/favicon-pi.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
@@ -18,194 +18,99 @@
         <span>智教π</span>
       </a>
       <nav class="nav-links" aria-label="页面导航">
-        <a href="#background">产品逻辑</a>
-        <a href="#challenge">真实挑战</a>
-        <a href="#solution">解决方案</a>
-        <a href="#architecture">架构图谱</a>
-        <a href="#workflow">流程演示</a>
-        <a href="#demo">Demo</a>
+        <a href="#why">为何需要</a>
+        <a href="#how">怎么做成</a>
+        <a href="#demo">可试用</a>
+        <a href="#fit">如何落地</a>
       </nav>
       <a class="header-action" href="./workbench/">打开工作台</a>
     </header>
 
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
-        <img class="hero-image" src="./assets/hero-classroom-v2.png" alt="教师在教室中采集纸质作业并查看智能学情大屏" />
+        <img
+          class="hero-image"
+          src="./assets/hero-classroom-v2.png"
+          alt="教师在教室中采集纸质作业并查看智能学情大屏"
+        />
         <div class="hero-wash"></div>
         <div class="hero-content reveal is-visible">
-          <p class="eyebrow">2026 AI 先锋未来人才大赛 · 视源股份命题</p>
+          <p class="eyebrow">视源股份命题 · 希沃生态</p>
           <h1 id="hero-title">希沃智教π</h1>
-          <p class="hero-subtitle">补齐希沃生态里的“评”环节。</p>
+          <p class="hero-subtitle">补齐希沃生态里的「评」。</p>
           <p class="hero-copy">
-            老师保留纸质作业习惯，用手机、小程序、Web 或视频展台完成集中采集；AI 在后台完成题目切分、手写识别、过程判分与学情诊断，最后生成下一节讲评课。
+            纸质作业照常写、教师端集中拍；AI 切题、识别、判分并保留证据，结果回到讲评课与复核，而不是停在一份报告。
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="#solution">看整体方案</a>
-            <a class="button secondary" href="./workbench/">进入 Demo</a>
+            <a class="button primary" href="./workbench/">打开测试工作台</a>
+            <a class="button secondary" href="#how">看产品路径</a>
           </div>
         </div>
-        <div class="hero-proof" aria-label="核心指标">
-          <span><strong data-count="15" data-suffix="min">0</strong>40 人作业采集目标</span>
-          <span><strong data-count="7" data-suffix=" Agent">0</strong>识别到讲评闭环</span>
-          <span><strong data-count="3" data-suffix=" 端">0</strong>APP / 小程序 / Web</span>
+        <div class="hero-proof hero-proof-compact" aria-label="核心指标">
+          <span><strong data-count="15" data-suffix=" min">0</strong>约 40 人班采集目标</span>
+          <span><strong>采 → 判 → 讲</strong>一条闭环</span>
         </div>
       </section>
 
-      <section id="background" class="section narrative reveal-block" aria-labelledby="background-title">
-        <div class="section-kicker">Background</div>
+      <section id="why" class="section why-section reveal-block" aria-labelledby="why-title">
+        <div class="section-kicker">01 · Why</div>
         <div class="split-lead">
           <div>
-            <p class="eyebrow">评委第一个问题：为什么做这个？</p>
-            <h2 id="background-title">纸质作业没有消失，数据却常常停在纸面上。</h2>
+            <p class="eyebrow">为何需要</p>
+            <h2 id="why-title">纸面作业还在，过程评价却回不到课堂。</h2>
           </div>
-          <p>
-            希沃白板、易课堂和 AI 教学空间已经覆盖“教”和“学”的大量场景，但日常纸质作业里的过程性评价仍然分散、滞后、难回到课堂。希沃智教π把这部分数据变成可复核、可追溯、可进入讲评课的教学资产。
+          <p class="lead-one-liner">
+            教与学已在希沃里；缺的是可信、可复核、能直接进讲评的「评」。
           </p>
         </div>
-        <div class="logic-strip">
-          <article>
-            <span>01</span>
-            <h3>不转嫁采集负担</h3>
-            <p>学生仍写纸质作业，采集入口集中在教师端，符合校园真实管理场景。</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>不只判断对错</h3>
-            <p>每个分数都关联原图、OCR 文本、题框、步骤分和置信度。</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>不止生成报告</h3>
-            <p>结果继续生成讲评顺序、典型错题、变式练习和飞书复核任务。</p>
-          </article>
-        </div>
-      </section>
 
-      <section id="challenge" class="section challenge reveal-block" aria-labelledby="challenge-title">
-        <div class="section-kicker">Challenge</div>
-        <div class="split-lead">
-          <div>
-            <p class="eyebrow">真实教学现场</p>
-            <h2 id="challenge-title">难点不在拍照，而在让 AI 读懂一摞乱序作业。</h2>
-          </div>
-          <p>
-            评委看到的不是普通 OCR Demo，而是一个面对真实作业本的系统设计：先建标准，再异步采集，低置信结果交给教师复核。
-          </p>
-        </div>
-        <div class="challenge-rail">
+        <div class="challenge-rail why-challenges">
           <article>
             <strong>乱序</strong>
             <h3>先确认是谁的作业</h3>
-            <p>姓名栏、封面、试卷头都可能成为身份入口，低置信匹配必须人工确认。</p>
+            <p>姓名栏、封面、试卷头都可识别；低置信必须人工确认。</p>
           </article>
           <article>
             <strong>非标</strong>
             <h3>先切出可判分的题</h3>
-            <p>双栏、斜拍、跨区作答、作文和过程题需要多区域题目切分能力。</p>
+            <p>双栏、斜拍、跨区作答——完整切题，而不是整页横条。</p>
           </article>
           <article>
-            <strong>不信任</strong>
-            <h3>先保留证据再给建议</h3>
-            <p>AI 建议分不是终点，教师能看到扣分原因、步骤证据和复核优先级。</p>
+            <strong>证据</strong>
+            <h3>先留证据再给建议分</h3>
+            <p>原图、OCR、步骤分与置信度一并呈现，老师做最终裁决。</p>
           </article>
         </div>
+
+        <ul class="principle-tags" aria-label="产品原则">
+          <li>不转嫁采集负担</li>
+          <li>不只判断对错</li>
+          <li>不止生成报告</li>
+        </ul>
       </section>
 
-      <section id="solution" class="section solution reveal-block" aria-labelledby="solution-title">
-        <div class="section-kicker">Solution</div>
+      <section id="how" class="section how-section reveal-block" aria-labelledby="how-title">
+        <div class="section-kicker">02 · How</div>
         <div class="split-lead">
           <div>
-            <p class="eyebrow">整体解决方案</p>
-            <h2 id="solution-title">前台连续采集，后台并行批改，课堂即时回流。</h2>
+            <p class="eyebrow">怎么做成</p>
+            <h2 id="how-title">老师继续拍，AI 在后台跑。</h2>
           </div>
-          <p>
-            系统以 APP / 小程序 / Web / 视频展台为入口，以 AI 批改中台为核心，连接希沃白板、易课堂、AI 教学空间和飞书协同。
-          </p>
+          <p class="lead-one-liner">前台连续采集，后台并行批改，异常进复核，结果进课堂。</p>
         </div>
 
-        <div class="solution-canvas">
-          <div class="device-stack" aria-label="三端采集与复核预览">
-            <img class="device-image parallax" src="./assets/product-preview-devices.png" alt="Web 复核台、APP 连续采集和小程序快拍界面预览" />
-          </div>
-          <div class="solution-steps">
-            <article>
-              <span>采集层</span>
-              <h3>拍题目、拍答案、拍姓名、拍作答</h3>
-              <p>每一步只让老师完成一个动作，弱网可缓存，失败可补拍。</p>
-            </article>
-            <article>
-              <span>智能层</span>
-              <h3>OCR + QuestionSplit + Rubric + Grading</h3>
-              <p>增强版 QuestionSplit 保留原图证据，Rubric 由教师确认后再批量复用。</p>
-            </article>
-            <article>
-              <span>教学层</span>
-              <h3>复核队列、学情诊断、讲评课生成</h3>
-              <p>老师优先处理异常项，再把结果导向下一节希沃课堂。</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section id="architecture" class="section architecture reveal-block" aria-labelledby="architecture-title">
-        <div class="section-kicker">Architecture</div>
-        <div class="split-lead">
-          <div>
-            <p class="eyebrow">树状产品架构</p>
-            <h2 id="architecture-title">中心是“评”，向外连接端、模型、数据和生态。</h2>
-          </div>
-          <p>
-            图谱展示产品不是一个孤立工具，而是围绕教学闭环组织的 AI Native 系统。悬停或点击任一分支可查看职责。
-          </p>
-        </div>
-
-        <div class="mindmap" aria-label="希沃智教π产品架构图谱">
-          <div class="map-center" data-map-node="center">
-            <span>希沃智教π</span>
-            <strong>AI Native 作业批改智能体</strong>
-          </div>
-          <button class="map-node node-client active" type="button" data-map-node="client">
-            <span>端侧入口</span>
-            <strong>APP / 小程序 / Web / 视频展台</strong>
-          </button>
-          <button class="map-node node-ai" type="button" data-map-node="ai">
-            <span>AI 批改中台</span>
-            <strong>OCR · Identity · Rubric · Grading</strong>
-          </button>
-          <button class="map-node node-data" type="button" data-map-node="data">
-            <span>数据飞轮</span>
-            <strong>Bad Case · Eval · ReviewLog</strong>
-          </button>
-          <button class="map-node node-eco" type="button" data-map-node="eco">
-            <span>希沃生态</span>
-            <strong>白板 · 大屏 · 易课堂 · 综评</strong>
-          </button>
-          <button class="map-node node-feishu" type="button" data-map-node="feishu">
-            <span>飞书协同</span>
-            <strong>机器人 · Base · Aily · 自动化</strong>
-          </button>
-          <div class="map-lines" aria-hidden="true"></div>
-        </div>
-        <p class="map-caption" id="map-caption">
-          教师在多端完成低门槛采集，系统把图片、身份、题目和作答绑定成可批改任务。
-        </p>
-      </section>
-
-      <section id="workflow" class="section workflow reveal-block" aria-labelledby="workflow-title">
-        <div class="section-kicker">Workflow</div>
-        <div class="split-lead">
-          <div>
-            <p class="eyebrow">流程演示</p>
-            <h2 id="workflow-title">老师继续拍，AI 在后台跑。</h2>
-          </div>
-          <p>
-            采集动作和批改动作异步并行，前台不阻塞老师；后台把低置信、主观题和异常分收束到复核队列。
-          </p>
-        </div>
+        <ol class="task-chain compact-chain" aria-label="产品主链路">
+          <li class="done"><span>1</span><strong>采集</strong></li>
+          <li class="done"><span>2</span><strong>识别</strong></li>
+          <li class="active"><span>3</span><strong>批改</strong></li>
+          <li><span>4</span><strong>复核</strong></li>
+          <li><span>5</span><strong>学情</strong></li>
+          <li><span>6</span><strong>讲评</strong></li>
+        </ol>
 
         <div class="workflow-shell">
           <div class="stepper" role="tablist" aria-label="批改流程">
-            <button class="active" type="button" data-flow="0">拍题目答案</button>
+            <button class="active" type="button" data-flow="0">拍题建标准</button>
             <button type="button" data-flow="1">确认 Rubric</button>
             <button type="button" data-flow="2">拍姓名作答</button>
             <button type="button" data-flow="3">异步批改</button>
@@ -219,7 +124,7 @@
               <p class="eyebrow" id="flow-label">Step 01</p>
               <h3 id="flow-title-dynamic">先让系统理解本次作业</h3>
               <p id="flow-copy-dynamic">
-                系统先识别空白题目和答案册，产出题框、知识点、答案解析和 Rubric 草稿，避免直接盲判学生作答。
+                先识别空白题目与答案册，产出题框与评分标准草稿，避免盲判学生作答。
               </p>
               <div class="flow-tags" id="flow-tags">
                 <span>题框 bbox</span><span>答案解析</span><span>Rubric 草稿</span>
@@ -229,105 +134,28 @@
         </div>
       </section>
 
-      <section class="section task-chain-section reveal-block" aria-labelledby="task-chain-title">
-        <div class="section-kicker">Chain</div>
-        <div class="split-lead compact">
-          <div>
-            <p class="eyebrow">从采集到讲评</p>
-            <h2 id="task-chain-title">评委只要看这一条链路，就能明白产品闭环。</h2>
-          </div>
-          <p>
-            每个节点都有可见状态：作业如何进入系统、AI 如何处理、老师在哪里复核、结果如何回到课堂。
-          </p>
-        </div>
-        <div class="task-chain" aria-label="从采集到讲评的任务链路">
-          <article class="done"><span>01</span><strong>采集</strong><small>题目/答案/姓名/作答</small></article>
-          <article class="done"><span>02</span><strong>识别</strong><small>OCR + 题目切分</small></article>
-          <article class="active"><span>03</span><strong>批改</strong><small>规则优先 + Rubric</small></article>
-          <article><span>04</span><strong>复核</strong><small>低置信与主观题</small></article>
-          <article><span>05</span><strong>学情</strong><small>错因/知识点/学生趋势</small></article>
-          <article><span>06</span><strong>讲评</strong><small>白板课件与变式练习</small></article>
-        </div>
-      </section>
-
-      <section id="ecosystem" class="section ecosystem reveal-block" aria-labelledby="ecosystem-title">
-        <div class="section-kicker">Ecosystem</div>
-        <div class="split-lead">
-          <div>
-            <p class="eyebrow">希沃 / 飞书融合</p>
-            <h2 id="ecosystem-title">批改结果不留在报告里，而是进入下一次教学行动。</h2>
-          </div>
-          <p>
-            智教π把“评”的结果接回希沃课堂，并通过飞书把复核、提醒和教研协同流转起来。
-          </p>
-        </div>
-        <div class="ecosystem-flow">
-          <article>
-            <span>希沃白板</span>
-            <h3>生成讲评课件</h3>
-            <p>共性错题、板书结构、讲评顺序直接进入课堂。</p>
-          </article>
-          <article>
-            <span>易课堂</span>
-            <h3>推送变式练习</h3>
-            <p>讲完之后继续练，形成“评后巩固”。</p>
-          </article>
-          <article>
-            <span>飞书 Base</span>
-            <h3>沉淀复核数据</h3>
-            <p>作业、学生、题目、错因、复核状态结构化存档。</p>
-          </article>
-          <article>
-            <span>Aily</span>
-            <h3>自然语言问学情</h3>
-            <p>老师可直接询问“本次最该讲哪三题”。</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="impact" class="section impact reveal-block" aria-labelledby="impact-title">
-        <div class="section-kicker">Impact</div>
-        <div class="split-lead">
-          <div>
-            <p class="eyebrow">预期效果</p>
-            <h2 id="impact-title">减少重复劳动，把教师时间还给判断和讲解。</h2>
-          </div>
-          <p>
-            系统指标围绕采集效率、复核时间、AI 采纳率和讲评课复用率设计，确保 Demo 讲得清，也能继续落地。
-          </p>
-        </div>
-        <div class="metric-board">
-          <article><strong data-count="60" data-suffix="%">0</strong><span>教师复核时间下降目标</span></article>
-          <article><strong data-count="80" data-suffix="%">0</strong><span>主观题建议采纳率目标</span></article>
-          <article><strong data-count="98" data-suffix="%">0</strong><span>客观题判分准确率目标</span></article>
-          <article><strong data-count="300" data-suffix="ms">0</strong><span>单页入队反馈目标</span></article>
-        </div>
-      </section>
-
       <section id="demo" class="section demo reveal-block" aria-labelledby="demo-title">
         <div class="demo-copy">
-          <p class="eyebrow">Demo 工作台</p>
-          <h2 id="demo-title">看完产品逻辑，再进入真实测试台。</h2>
-          <p>
-            首页把工作台能力先讲清楚：题目如何被切开、证据如何保留、AI 如何给出建议、老师如何复核并生成学情。
-          </p>
+          <p class="eyebrow">可试用</p>
+          <h2 id="demo-title">真实作业样例，直接进工作台验证。</h2>
+          <p class="lead-one-liner">切题、证据、建议分与学情——在界面里点一遍比读十段说明更清楚。</p>
           <a class="button primary" href="./workbench/">打开测试工作台</a>
           <div class="capability-grid" aria-label="工作台能力">
             <button class="capability-card active" type="button" data-demo-feature="split">
-              <span>01</span><strong>题目切分</strong><small>识别题框和作答区</small>
+              <span>01</span><strong>题目切分</strong><small>题框与作答区</small>
             </button>
             <button class="capability-card" type="button" data-demo-feature="crop">
-              <span>02</span><strong>多区域裁切</strong><small>跨区题保留完整证据</small>
+              <span>02</span><strong>完整裁切</strong><small>跨区题不丢边</small>
             </button>
             <button class="capability-card" type="button" data-demo-feature="agent">
-              <span>03</span><strong>模型代理状态</strong><small>OCR / Grading / Review</small>
+              <span>03</span><strong>判分与复核</strong><small>低置信优先</small>
             </button>
             <button class="capability-card" type="button" data-demo-feature="report">
-              <span>04</span><strong>学情报告</strong><small>错因和讲评建议</small>
+              <span>04</span><strong>学情讲评</strong><small>丢分点与建议</small>
             </button>
           </div>
         </div>
-        <div class="demo-showcase" data-active-feature="split" aria-label="工作台真实产品预览">
+        <div class="demo-showcase" data-active-feature="split" aria-label="工作台产品预览">
           <div class="demo-browser">
             <div class="demo-bar">
               <span></span><span></span><span></span>
@@ -336,10 +164,10 @@
             <div class="demo-product">
               <aside class="demo-sidebar">
                 <strong>样例任务</strong>
-                <button class="active">高中数学 · 空间几何</button>
-                <button>小学数学 · 口算订正</button>
-                <button>高中语文 · 主观题</button>
-                <button>奥数 · 多步骤题</button>
+                <button class="active" type="button">高中数学 · 空间几何</button>
+                <button type="button">小学数学 · 口算订正</button>
+                <button type="button">高中语文 · 主观题</button>
+                <button type="button">奥数 · 多步骤题</button>
               </aside>
               <main class="demo-canvas">
                 <div class="demo-paper-wrap" data-feature-region="split">
@@ -350,14 +178,14 @@
                 </div>
                 <div class="demo-mini-panels">
                   <article data-feature-region="crop">
-                    <span>多区域裁切</span>
-                    <strong>3 个 region 已拼接</strong>
-                    <small>题干、图形、作答过程合并为完整题图。</small>
+                    <span>完整裁切</span>
+                    <strong>多 region 竖拼</strong>
+                    <small>题干与作答过程合成完整题图。</small>
                   </article>
                   <article data-feature-region="agent">
-                    <span>Agent 状态</span>
-                    <strong>Review Agent 待确认</strong>
-                    <small>主观题低置信，建议进入教师复核。</small>
+                    <span>复核队列</span>
+                    <strong>低置信待确认</strong>
+                    <small>主观题建议分，教师最终裁决。</small>
                   </article>
                 </div>
               </main>
@@ -370,17 +198,88 @@
                   <li>答句与单位缺失</li>
                 </ol>
                 <div class="report-meter"><i style="width: 68%"></i></div>
-                <small>建议先讲第 3 题，再推送 2 道变式练习。</small>
+                <small>建议先讲第 3 题，再推送变式练习。</small>
               </aside>
             </div>
           </div>
         </div>
       </section>
+
+      <section id="fit" class="section fit-section reveal-block" aria-labelledby="fit-title">
+        <div class="section-kicker">03 · Fit</div>
+        <div class="split-lead">
+          <div>
+            <p class="eyebrow">如何落地</p>
+            <h2 id="fit-title">中心是「评」，接回希沃课堂与飞书协同。</h2>
+          </div>
+          <p class="lead-one-liner">多端采集进中台，结果导向白板讲评、变式练习与复核存档。</p>
+        </div>
+
+        <div class="fit-arch" aria-label="产品能力节点">
+          <button class="fit-node active" type="button" data-map-node="client">
+            <span>端侧</span>
+            <strong>APP / 小程序 / Web</strong>
+          </button>
+          <button class="fit-node" type="button" data-map-node="ai">
+            <span>中台</span>
+            <strong>切题 · 识别 · 判分</strong>
+          </button>
+          <button class="fit-node" type="button" data-map-node="data">
+            <span>飞轮</span>
+            <strong>复核 · Bad Case</strong>
+          </button>
+          <button class="fit-node" type="button" data-map-node="eco">
+            <span>希沃</span>
+            <strong>白板 · 易课堂</strong>
+          </button>
+          <button class="fit-node" type="button" data-map-node="feishu">
+            <span>飞书</span>
+            <strong>Base · 提醒</strong>
+          </button>
+        </div>
+        <p class="map-caption" id="map-caption">
+          教师在多端完成低门槛采集，系统把图片、身份、题目和作答绑定成可批改任务。
+        </p>
+
+        <div class="ecosystem-flow fit-eco">
+          <article>
+            <span>希沃白板</span>
+            <h3>讲评课件</h3>
+            <p>共性错题与讲评顺序进课堂。</p>
+          </article>
+          <article>
+            <span>易课堂</span>
+            <h3>变式练习</h3>
+            <p>讲完继续练，形成巩固。</p>
+          </article>
+          <article>
+            <span>飞书 Base</span>
+            <h3>复核存档</h3>
+            <p>题目、错因、状态可追溯。</p>
+          </article>
+          <article>
+            <span>效率目标</span>
+            <h3>把时间还给讲解</h3>
+            <p>复核聚焦异常，客观题可自动放行。</p>
+          </article>
+        </div>
+
+        <div class="metric-board fit-metrics">
+          <article><strong data-count="60" data-suffix="%">0</strong><span>复核时间下降目标</span></article>
+          <article><strong data-count="80" data-suffix="%">0</strong><span>主观题建议采纳目标</span></article>
+          <article><strong data-count="98" data-suffix="%">0</strong><span>客观题准确率目标</span></article>
+        </div>
+
+        <div class="fit-cta">
+          <a class="button primary" href="./workbench/">进入工作台体验</a>
+          <a class="button secondary" href="#why">回到为何需要</a>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
-      <span>希沃智教π · AI Native 作业批改与教学闭环系统</span>
-      <span>让纸质作业的“评”，自然回到希沃课堂。</span>
+      <span>希沃智教π</span>
+      <span>让纸质作业的「评」，自然回到希沃课堂。</span>
     </footer>
 
     <script src="./script.js"></script>

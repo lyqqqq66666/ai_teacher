@@ -17,7 +17,7 @@ const flowData = [
     agent: "OCR Agent",
     title: "先让系统理解本次作业",
     copy:
-      "系统先识别空白题目和答案册，产出题框、知识点、答案解析和 Rubric 草稿，避免直接盲判学生作答。",
+      "先识别空白题目与答案册，产出题框与评分标准草稿，避免盲判学生作答。",
     tags: ["题框 bbox", "答案解析", "Rubric 草稿"],
     visualType: "scan",
     previewImage: "./workbench/public/thumbs/hs_math/IMG_0347.jpg",
@@ -36,7 +36,7 @@ const flowData = [
     agent: "Rubric Agent",
     title: "主观题必须先有可解释评分标准",
     copy:
-      "Rubric 不自动放行。教师确认或调整后，系统才把同一套评分标准批量应用到全班作答。",
+      "评分标准需教师确认后，再批量应用到全班作答。",
     tags: ["步骤分", "教师确认", "版本记录"],
     visualType: "rubric",
     previewImage: "./workbench/public/thumbs/hs_math/IMG_0350.jpg",
@@ -55,7 +55,7 @@ const flowData = [
     agent: "Identity Agent",
     title: "乱序作业不用先整理",
     copy:
-      "老师可以从任意一本作业开始拍。系统识别姓名、学号或封面信息，低置信候选会明确进入人工确认。",
+      "作业可乱序采集；姓名与名单匹配，低置信进入人工确认。",
     tags: ["姓名 OCR", "名单匹配", "重复页检测"],
     visualType: "identity",
     previewImage: "./workbench/public/thumbs/hs_chinese/IMG_0305.jpg",
@@ -74,7 +74,7 @@ const flowData = [
     agent: "QuestionSplit + Grading",
     title: "采集和批改并行，不让老师等待",
     copy:
-      "前台继续拍下一页，后台完成图像增强、题目切分、手写识别、公式解析和分题型判分。",
+      "前台继续拍，后台完成切题、识别与分题型判分。",
     tags: ["多区域切分", "公式识别", "规则优先"],
     visualType: "grading",
     previewImage: "./workbench/public/thumbs/hs_math/IMG_0353.jpg",
@@ -93,7 +93,7 @@ const flowData = [
     agent: "Review Agent",
     title: "AI 辅助，教师最终裁决",
     copy:
-      "复核台展示原图区域、OCR 文本、步骤得分和扣分理由。教师修改会进入 Bad Case 和 Eval 回归。",
+      "复核台对照原图、OCR 与步骤分；教师修改回流 Bad Case。",
     tags: ["置信度", "原图证据", "Bad Case"],
     visualType: "review",
     previewImage: "./workbench/public/thumbs/hs_chinese/IMG_0318.jpg",
@@ -112,7 +112,7 @@ const flowData = [
     agent: "Teaching Agent",
     title: "把作业数据送回希沃课堂",
     copy:
-      "学情结果转为希沃白板讲评页、易课堂练习包、飞书复核卡片和可追踪的教研数据。",
+      "学情转为讲评顺序、变式练习与飞书复核摘要。",
     tags: ["希沃白板", "易课堂", "飞书 Base", "Aily"],
     visualType: "teaching",
     previewImage: "./workbench/public/thumbs/math/IMG_0293.jpg",
@@ -288,11 +288,11 @@ function renderFlowVisual(item) {
 }
 
 const mapData = {
-  client: "教师在多端完成低门槛采集，系统把图片、身份、题目和作答绑定成可批改任务。",
-  ai: "AI 中台按任务拆分给 OCR、Identity、Rubric、Grading、Diagnosis、Teaching 和 Review Agent。",
-  data: "教师修改、低置信样例和异常分进入 Bad Case 与 Eval，让系统持续进化。",
-  eco: "批改结果导向希沃白板、大屏、易课堂和综评，把作业数据带回课堂。",
-  feishu: "飞书机器人、Base、Aily 和自动化流程承接复核提醒、数据存档和自然语言学情查询。",
+  client: "多端采集：图片、身份、题目与作答绑定成可批改任务。",
+  ai: "中台拆分 OCR、身份、Rubric、判分、诊断、讲评与复核。",
+  data: "教师修改与低置信样例进入 Bad Case，持续改进。",
+  eco: "结果导向希沃白板与易课堂，作业数据回到课堂。",
+  feishu: "飞书承接复核提醒、Base 存档与学情查询。",
 };
 
 function setFlow(index) {
@@ -314,7 +314,7 @@ function setFlow(index) {
 }
 
 function setMapNode(key) {
-  if (!mapData[key]) return;
+  if (!mapData[key] || !mapCaption) return;
   mapCaption.textContent = mapData[key];
   mapButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.mapNode === key);
