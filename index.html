@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Newsreader:opsz,wght@6..72,500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=story-static-scan-2" />
+    <link rel="stylesheet" href="./styles.css?v=demo-sample-top3-1" />
     <link rel="stylesheet" href="./problems.css?v=inline-1" />
   </head>
   <body>
@@ -125,25 +125,11 @@
       <section id="demo" class="section demo reveal-block" aria-labelledby="demo-title">
         <div class="demo-copy">
           <p class="eyebrow">可试用</p>
-          <h2 id="demo-title">真实作业样例，直接进工作台验证。</h2>
-          <p class="lead-one-liner">切题、证据、建议分与学情——点一遍比读十段说明更清楚。</p>
+          <h2 id="demo-title">真实作业样例，学科不同、学情不同。</h2>
+          <p class="lead-one-liner">切换左侧任务，查看对应题框标注与本班 TOP3 丢分点。</p>
           <a class="button primary" href="./workbench/">打开测试工作台</a>
-          <div class="capability-grid" aria-label="工作台能力">
-            <button class="capability-card active" type="button" data-demo-feature="split">
-              <span>01</span><strong>题目切分</strong><small>题框与作答区</small>
-            </button>
-            <button class="capability-card" type="button" data-demo-feature="crop">
-              <span>02</span><strong>完整裁切</strong><small>跨区题不丢边</small>
-            </button>
-            <button class="capability-card" type="button" data-demo-feature="agent">
-              <span>03</span><strong>判分与复核</strong><small>低置信优先</small>
-            </button>
-            <button class="capability-card" type="button" data-demo-feature="report">
-              <span>04</span><strong>学情讲评</strong><small>丢分点与建议</small>
-            </button>
-          </div>
         </div>
-        <div class="demo-showcase" data-active-feature="split" aria-label="工作台产品预览">
+        <div class="demo-showcase" data-active-sample="hs_math" aria-label="作业样例预览">
           <div class="demo-browser">
             <div class="demo-bar">
               <span></span><span></span><span></span>
@@ -156,8 +142,8 @@
                   class="active"
                   type="button"
                   data-demo-sample="hs_math"
-                  data-demo-src="/workbench/public/thumbs/hs_math/IMG_0347.jpg"
-                  data-demo-alt="高中数学作业样例"
+                  data-demo-src="./workbench/public/thumbs/hs_math/IMG_0347.jpg"
+                  data-demo-alt="高中数学 · 空间几何作业样例"
                   title="高中数学 · 空间几何"
                   onclick="window.setDemoSample && window.setDemoSample(this); return false;"
                 >
@@ -166,8 +152,8 @@
                 <button
                   type="button"
                   data-demo-sample="math"
-                  data-demo-src="/workbench/public/thumbs/math/IMG_0281.jpg"
-                  data-demo-alt="小学数学作业样例"
+                  data-demo-src="./workbench/public/thumbs/math/IMG_0281.jpg"
+                  data-demo-alt="小学数学 · 三视图与分数作业样例"
                   title="小学数学 · 口算订正"
                   onclick="window.setDemoSample && window.setDemoSample(this); return false;"
                 >
@@ -176,8 +162,8 @@
                 <button
                   type="button"
                   data-demo-sample="hs_chinese"
-                  data-demo-src="/workbench/public/thumbs/hs_chinese/IMG_0305.jpg"
-                  data-demo-alt="高中语文作业样例"
+                  data-demo-src="./workbench/public/thumbs/hs_chinese/IMG_0305.jpg"
+                  data-demo-alt="高中语文 · 研读任务作业样例"
                   title="高中语文 · 主观题"
                   onclick="window.setDemoSample && window.setDemoSample(this); return false;"
                 >
@@ -186,8 +172,8 @@
                 <button
                   type="button"
                   data-demo-sample="olympiad"
-                  data-demo-src="/workbench/public/thumbs/olympiad/IMG_0298.jpg"
-                  data-demo-alt="奥数作业样例"
+                  data-demo-src="./workbench/public/thumbs/olympiad/IMG_0298.jpg"
+                  data-demo-alt="奥数 · 多步骤杯赛题样例"
                   title="奥数 · 多步骤题"
                   onclick="window.setDemoSample && window.setDemoSample(this); return false;"
                 >
@@ -195,40 +181,29 @@
                 </button>
               </aside>
               <main class="demo-canvas">
-                <div class="demo-paper-wrap" data-feature-region="split">
-                  <img
-                    id="demo-paper-img"
-                    src="/workbench/public/thumbs/hs_math/IMG_0347.jpg"
-                    alt="高中数学作业样例"
-                  />
-                  <span class="demo-bbox bbox-one"></span>
-                  <span class="demo-bbox bbox-two"></span>
-                  <span class="demo-bbox bbox-three"></span>
+                <div class="demo-paper-wrap" id="demo-paper-wrap" data-active-sample="hs_math">
+                  <div class="demo-scan-stage" id="demo-scan-stage">
+                    <img
+                      id="demo-paper-img"
+                      src="./workbench/public/thumbs/hs_math/IMG_0347.jpg"
+                      alt="高中数学 · 空间几何作业样例"
+                    />
+                    <!-- 识别框由 script 按样例注入，避免四科共用同一组框 -->
+                    <div class="demo-bbox-layer" id="demo-bbox-layer" aria-hidden="true"></div>
+                  </div>
                   <span class="demo-sample-badge" id="demo-sample-badge">高中数学 · 空间几何</span>
                 </div>
-                <div class="demo-mini-panels">
-                  <article data-feature-region="crop">
-                    <span>完整裁切</span>
-                    <strong>多 region 竖拼</strong>
-                    <small>题干与作答过程合成完整题图。</small>
-                  </article>
-                  <article data-feature-region="agent">
-                    <span>复核队列</span>
-                    <strong>低置信待确认</strong>
-                    <small>主观题建议分，教师最终裁决。</small>
-                  </article>
-                </div>
               </main>
-              <aside class="demo-inspector" data-feature-region="report">
+              <aside class="demo-inspector" id="demo-inspector" aria-label="学情摘要">
                 <span>学情摘要</span>
-                <strong>TOP3 丢分点</strong>
-                <ol>
-                  <li>空间关系建立不完整</li>
-                  <li>公式等价转换错误</li>
-                  <li>答句与单位缺失</li>
+                <strong id="demo-top3-title">TOP3 丢分点</strong>
+                <ol id="demo-top3-list">
+                  <li>线面 / 线线平行判定不完整</li>
+                  <li>建系坐标与中点条件写错</li>
+                  <li>平面平行缺关键推导句</li>
                 </ol>
-                <div class="report-meter"><i style="width: 68%"></i></div>
-                <small>建议先讲第 3 题，再推送变式练习。</small>
+                <div class="report-meter"><i id="demo-report-meter" style="width: 62%"></i></div>
+                <small id="demo-report-hint">建议先讲例 1 平行判定，再练建系书写。</small>
               </aside>
             </div>
           </div>
@@ -466,6 +441,6 @@
 
     <script src="./data/topic-brief.js"></script>
     <script src="./problems.js?v=inline-1"></script>
-    <script src="./script.js?v=story-static-scan-2"></script>
+    <script src="./script.js?v=demo-sample-top3-1"></script>
   </body>
 </html>

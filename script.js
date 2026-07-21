@@ -5,7 +5,6 @@ const navLinks = document.querySelectorAll(".nav-links a");
 const countItems = document.querySelectorAll("[data-count]");
 const parallaxItems = document.querySelectorAll(".parallax");
 const demoShowcase = document.querySelector(".demo-showcase");
-const demoFeatureButtons = document.querySelectorAll("[data-demo-feature]");
 
 const flowData = [
   {
@@ -634,33 +633,128 @@ mapButtons.forEach((button) => {
   button.addEventListener("click", () => setMapNode(key));
 });
 
-function setDemoFeature(feature) {
-  if (!demoShowcase) return;
-  demoShowcase.dataset.activeFeature = feature;
-  demoFeatureButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.demoFeature === feature);
-  });
-}
-
-demoFeatureButtons.forEach((button) => {
-  const feature = button.dataset.demoFeature;
-  button.addEventListener("mouseenter", () => setDemoFeature(feature));
-  button.addEventListener("focus", () => setDemoFeature(feature));
-  button.addEventListener("click", () => setDemoFeature(feature));
-});
+/**
+ * 四个样例任务：各自独立的识别框 + TOP3 丢分点（因地制宜，禁止跨学科套用）
+ * frames: 相对照片百分比；tone amber = 待复核/重点丢分区
+ */
+const demoSampleProfiles = {
+  hs_math: {
+    aspect: "3 / 4",
+    frames: [
+      // 竖版手写作答：课时标题/例题题干、例1 过程、例2 过程（对齐扫描 bbox 大致区域）
+      { left: "10%", top: "6%", width: "78%", height: "16%" },
+      { left: "10%", top: "28%", width: "78%", height: "30%" },
+      { left: "12%", top: "62%", width: "74%", height: "28%", tone: "amber" },
+    ],
+    top3: [
+      "线面 / 线线平行判定不完整",
+      "建系坐标与中点条件写错",
+      "平面平行缺关键推导句",
+    ],
+    meter: 62,
+    hint: "建议先讲例 1 平行判定，再统一建系书写规范。",
+  },
+  math: {
+    aspect: "4 / 3",
+    frames: [
+      // 横版练习册：左三视图连线、右/中分数计算、下应用题答句
+      { left: "5%", top: "8%", width: "42%", height: "50%" },
+      { left: "50%", top: "8%", width: "45%", height: "40%" },
+      { left: "6%", top: "62%", width: "88%", height: "28%", tone: "amber" },
+    ],
+    top3: [
+      "三视图「上面」朝向混淆",
+      "异分母通分 / 约分遗漏",
+      "应用题答句缺单位",
+    ],
+    meter: 55,
+    hint: "建议先用小方块复盘前/左/上视图，再练通分找 LCM。",
+  },
+  hs_chinese: {
+    aspect: "4 / 3",
+    frames: [
+      // 字音字形、词语辨析、下方研读任务手写
+      { left: "4%", top: "6%", width: "44%", height: "42%" },
+      { left: "50%", top: "6%", width: "45%", height: "42%" },
+      { left: "6%", top: "54%", width: "88%", height: "36%", tone: "amber" },
+    ],
+    top3: [
+      "多音字 / 易错字形识记不稳",
+      "近义词语（觉醒·觉悟等）辨析混淆",
+      "研读任务答点不全、缺少史实依据",
+    ],
+    meter: 58,
+    hint: "建议先落实字音字形小测，再讲研读任务采分点。",
+  },
+  olympiad: {
+    aspect: "4 / 3",
+    frames: [
+      // 杯赛多步：上题题干、中路径/面积、下追及或多步待复核
+      { left: "6%", top: "6%", width: "86%", height: "24%" },
+      { left: "6%", top: "34%", width: "86%", height: "28%" },
+      { left: "8%", top: "66%", width: "82%", height: "26%", tone: "amber" },
+    ],
+    top3: [
+      "题意建模不到位（位值 / 路径）",
+      "几何割补与坐标描点缺步",
+      "行程追及时间轴未画清",
+    ],
+    meter: 48,
+    hint: "建议先练「画图建模」，再统一讲追及时间轴。",
+  },
+};
 
 function resolveAssetUrl(src) {
   if (!src) return "";
   try {
-    return new URL(src, window.location.href).href;
+    // 相对路径按当前页面解析，避免绝对 / 路径在子目录失效
+    if (src.startsWith("./") || src.startsWith("../") || !src.startsWith("/")) {
+      return new URL(src, window.location.href).href;
+    }
+    return new URL(src, window.location.origin).href;
   } catch {
     return src;
+  }
+}
+
+function renderDemoFrames(sampleId) {
+  const layer = document.getElementById("demo-bbox-layer");
+  const stage = document.getElementById("demo-scan-stage");
+  const profile = demoSampleProfiles[sampleId] || demoSampleProfiles.hs_math;
+  if (!layer) return;
+
+  if (stage && profile.aspect) {
+    stage.style.aspectRatio = profile.aspect;
+  }
+
+  layer.innerHTML = (profile.frames || [])
+    .map((f) => {
+      const tone = f.tone === "amber" ? " is-amber" : "";
+      return `<span class="demo-bbox${tone}" style="left:${f.left};top:${f.top};width:${f.width};height:${f.height}"></span>`;
+    })
+    .join("");
+}
+
+function renderDemoTop3(sampleId) {
+  const profile = demoSampleProfiles[sampleId] || demoSampleProfiles.hs_math;
+  const list = document.getElementById("demo-top3-list");
+  const meter = document.getElementById("demo-report-meter");
+  const hint = document.getElementById("demo-report-hint");
+  if (list) {
+    list.innerHTML = (profile.top3 || []).map((t) => `<li>${t}</li>`).join("");
+  }
+  if (meter) {
+    meter.style.width = `${profile.meter != null ? profile.meter : 60}%`;
+  }
+  if (hint) {
+    hint.textContent = profile.hint || "";
   }
 }
 
 function setDemoSample(button) {
   if (!button) return;
 
+  const sampleId = button.getAttribute("data-demo-sample") || button.dataset.demoSample || "hs_math";
   const rawSrc =
     button.getAttribute("data-demo-src") ||
     button.dataset.demoSrc ||
@@ -673,41 +767,43 @@ function setDemoSample(button) {
     button.getAttribute("title") ||
     button.textContent.replace(/\s+/g, " ").trim() ||
     alt;
-  // 用站点根路径，避免相对路径在某些打开方式下解析错
-  const nextSrc = resolveAssetUrl(rawSrc.startsWith("/") ? rawSrc : `/${rawSrc.replace(/^\.\//, "")}`);
+  const nextSrc = resolveAssetUrl(rawSrc);
 
   const img =
     document.getElementById("demo-paper-img") ||
     document.querySelector(".demo-paper-wrap img");
-  const paperWrap = document.querySelector(".demo-paper-wrap");
+  const paperWrap = document.getElementById("demo-paper-wrap") || document.querySelector(".demo-paper-wrap");
   const badge = document.getElementById("demo-sample-badge");
 
   if (img && nextSrc) {
     if (paperWrap) paperWrap.classList.add("is-switching");
 
     img.alt = alt;
-    img.setAttribute("data-active-sample", button.getAttribute("data-demo-sample") || "");
+    img.setAttribute("data-active-sample", sampleId);
 
-    // 同步立即换图（不再依赖 rAF，避免“点了没反应”的观感）
     const bust = `${nextSrc}${nextSrc.includes("?") ? "&" : "?"}t=${Date.now()}`;
     img.onload = () => {
       if (paperWrap) paperWrap.classList.remove("is-switching");
     };
     img.onerror = () => {
-      // 回退无缓存戳路径
       img.onerror = null;
       img.src = nextSrc;
       if (paperWrap) paperWrap.classList.remove("is-switching");
     };
     img.src = bust;
 
-    // 保险：若浏览器未触发 load（缓存命中），短时去掉切换态
     window.setTimeout(() => {
       if (paperWrap) paperWrap.classList.remove("is-switching");
     }, 280);
   }
 
   if (badge) badge.textContent = label;
+  if (paperWrap) paperWrap.dataset.activeSample = sampleId;
+  if (demoShowcase) demoShowcase.dataset.activeSample = sampleId;
+
+  // 换样例：同步换框 + 换 TOP3（禁止全站同一套数学丢分点）
+  renderDemoFrames(sampleId);
+  renderDemoTop3(sampleId);
 
   document.querySelectorAll("[data-demo-sample]").forEach((item) => {
     item.classList.toggle("active", item === button);
@@ -721,7 +817,6 @@ function bindDemoSampleClicks() {
   const demoSidebar = document.querySelector(".demo-sidebar");
   if (!demoSidebar) return;
 
-  // 每个按钮直接绑 click，比委托更稳
   demoSidebar.querySelectorAll("[data-demo-sample]").forEach((button) => {
     if (button.dataset.boundSampleClick === "1") return;
     button.dataset.boundSampleClick = "1";
@@ -737,6 +832,20 @@ function bindDemoSampleClicks() {
 
 bindDemoSampleClicks();
 document.addEventListener("DOMContentLoaded", bindDemoSampleClicks);
+
+// 首屏：默认高中数学样例的框与 TOP3
+(function initDemoSample() {
+  const active =
+    document.querySelector(".demo-sidebar button.active[data-demo-sample]") ||
+    document.querySelector("[data-demo-sample]");
+  if (active) {
+    renderDemoFrames(active.getAttribute("data-demo-sample") || "hs_math");
+    renderDemoTop3(active.getAttribute("data-demo-sample") || "hs_math");
+  } else {
+    renderDemoFrames("hs_math");
+    renderDemoTop3("hs_math");
+  }
+})();
 
 let lastScrollY = window.scrollY;
 let headerTicking = false;
@@ -779,6 +888,5 @@ window.addEventListener("scroll", requestScrollUpdate, { passive: true });
 window.addEventListener("resize", requestScrollUpdate);
 
 setMapNode("client");
-setDemoFeature("split");
 updateHeaderState();
 updateParallax();
