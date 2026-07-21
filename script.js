@@ -164,7 +164,6 @@ const flowData = [
           reason: "答句不规范 · 单位",
         },
       ],
-      actions: ["希沃白板讲评", "变式 8 分钟", "飞书提醒面批"],
     },
   },
 ];
@@ -317,7 +316,6 @@ function renderTeachColPanel(item) {
   const brief = item.teachingBrief || {};
   const teachPoints = brief.teachPoints || [];
   const focusStudents = brief.focusStudents || [];
-  const actions = brief.actions || item.tags || [];
 
   const pointsHtml = teachPoints
     .map(
@@ -345,11 +343,6 @@ function renderTeachColPanel(item) {
         <em class="focus-score">${s.score || ""}</em>
       </li>`
     )
-    .join("");
-
-  const actionsHtml = actions
-    .slice(0, 3)
-    .map((a) => `<em>${a}</em>`)
     .join("");
 
   return `
@@ -380,10 +373,6 @@ function renderTeachColPanel(item) {
           </header>
           <ol class="focus-student-list">${studentsHtml}</ol>
         </section>
-
-        <div class="teach-actions" aria-label="课堂动作">
-          ${actionsHtml}
-        </div>
       </div>
     </div>`;
 }
@@ -547,8 +536,6 @@ const prefersReducedMotion =
 const storyColumns = [
   {
     visualId: "flow-visual-0",
-    tagsId: "flow-tags-0",
-    tags: ["题框 bbox", "例题区域", "图示识别"],
     item: {
       barTitle: "采集 · 空白题目",
       screenTitle: "采集 · 空白题目",
@@ -572,8 +559,6 @@ const storyColumns = [
   },
   {
     visualId: "flow-visual-1",
-    tagsId: "flow-tags-1",
-    tags: ["手写过程", "切题判分", "证据框"],
     item: {
       barTitle: "采集 · 全班作答",
       screenTitle: "采集 · 全班作答",
@@ -597,8 +582,6 @@ const storyColumns = [
   },
   {
     visualId: "flow-visual-2",
-    tagsId: "flow-tags-2",
-    tags: ["希沃白板", "变式练习", "飞书 Base"],
     item: flowData[5],
   },
 ];
@@ -615,10 +598,6 @@ function preloadStoryImages() {
 function renderStoryColumns() {
   storyColumns.forEach((col) => {
     renderFlowVisual(col.visualId, col.item);
-    const tagsEl = document.getElementById(col.tagsId);
-    if (tagsEl && col.tags) {
-      tagsEl.innerHTML = col.tags.map((tag) => `<span>${tag}</span>`).join("");
-    }
   });
 }
 
