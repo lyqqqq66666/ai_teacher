@@ -105,8 +105,8 @@ const flowData = [
   },
   {
     label: "Step 06",
-    screenTitle: "生成讲评课",
-    screenCopy: "输出 TOP 题目、关注学生、板书结构和变式练习。",
+    screenTitle: "一人一评价 · 学情讲评",
+    screenCopy: "输出讲评知识点、需关注学生与课堂动作。",
     agent: "Teaching Agent",
     title: "把作业数据送回希沃课堂",
     copy:
@@ -121,6 +121,52 @@ const flowData = [
       ["Teaching Agent", "讲评课草稿完成", "等待教师确认"],
       ["Feishu Bot", "复核摘要可推送", "Base 同步记录"],
     ],
+    // 右侧栏丰富学情卡（对齐 demo 学情：知识点 / 需关注学生 / 讲评动作）
+    teachingBrief: {
+      classLabel: "高二 3 班 · 数学",
+      avgRate: "81%",
+      submitCount: 42,
+      // 课上优先讲清的 3 个知识点（对应共性薄弱）
+      teachPoints: [
+        {
+          no: "01",
+          title: "空间关系建立",
+          hint: "先辨方向与辅助线，再列式",
+          rate: "62%",
+        },
+        {
+          no: "02",
+          title: "向量 / 几何关系",
+          hint: "过程分边界：等价写法可给",
+          rate: "71%",
+        },
+        {
+          no: "03",
+          title: "结论与单位规范",
+          hint: "答句完整、单位不漏",
+          rate: "78%",
+        },
+      ],
+      // 表现需优先调整的 3 名同学（勿用负面标签）
+      focusStudents: [
+        {
+          name: "李一航",
+          score: "18/30",
+          reason: "空间关系 · 审题",
+        },
+        {
+          name: "王晓彤",
+          score: "20/30",
+          reason: "过程跳步 · 推导不全",
+        },
+        {
+          name: "陈思远",
+          score: "21/30",
+          reason: "答句不规范 · 单位",
+        },
+      ],
+      actions: ["希沃白板讲评", "变式 8 分钟", "飞书提醒面批"],
+    },
   },
 ];
 
@@ -267,33 +313,91 @@ function renderTeachingPanel(item) {
   `;
 }
 
+/** 右侧「一人一评价」：讲评知识点 TOP3 + 需调整同学 TOP3 */
+function renderTeachColPanel(item) {
+  const brief = item.teachingBrief || {};
+  const teachPoints = brief.teachPoints || [];
+  const focusStudents = brief.focusStudents || [];
+  const actions = brief.actions || item.tags || [];
+
+  const pointsHtml = teachPoints
+    .map(
+      (p) => `
+      <li>
+        <span class="teach-no">${p.no || ""}</span>
+        <div class="teach-body">
+          <strong>${p.title || ""}</strong>
+          <small>${p.hint || ""}</small>
+        </div>
+        <em class="teach-rate" title="班级掌握率">${p.rate || ""}</em>
+      </li>`
+    )
+    .join("");
+
+  const studentsHtml = focusStudents
+    .map(
+      (s, i) => `
+      <li>
+        <span class="focus-rank">${i + 1}</span>
+        <div class="focus-body">
+          <strong>${s.name || ""}</strong>
+          <small>${s.reason || ""}</small>
+        </div>
+        <em class="focus-score">${s.score || ""}</em>
+      </li>`
+    )
+    .join("");
+
+  const actionsHtml = actions
+    .slice(0, 3)
+    .map((a) => `<em>${a}</em>`)
+    .join("");
+
+  return `
+    <div class="col-panel col-panel--teach">
+      <div class="col-panel-bar">
+        <i></i><i></i><i></i>
+        <strong>${item.screenTitle || "一人一评价"}</strong>
+      </div>
+      <div class="teach-panel">
+        <div class="teach-meta">
+          <span>${brief.classLabel || "本班作业"}</span>
+          <strong>均分 ${brief.avgRate || "—"}</strong>
+          <small>提交 ${brief.submitCount != null ? brief.submitCount : "—"} 人</small>
+        </div>
+
+        <section class="teach-block" aria-label="讲评知识点">
+          <header>
+            <span>讲评优先</span>
+            <strong>课上先讲清的 3 个知识点</strong>
+          </header>
+          <ol class="teach-point-list">${pointsHtml}</ol>
+        </section>
+
+        <section class="teach-block teach-block--focus" aria-label="需关注学生">
+          <header>
+            <span>面批优先</span>
+            <strong>表现需调整的 3 位同学</strong>
+          </header>
+          <ol class="focus-student-list">${studentsHtml}</ol>
+        </section>
+
+        <div class="teach-actions" aria-label="课堂动作">
+          ${actionsHtml}
+        </div>
+      </div>
+    </div>`;
+}
+
 /** 三栏紧凑预览（左中右同一板块用），避免大控制台在窄栏里挤爆 */
 function renderColPanel(item, options = {}) {
+  if (item.visualType === "teaching") {
+    return renderTeachColPanel(item);
+  }
+
   const title = options.barTitle || item.screenTitle || "产品预览";
   const points = (item.agentEvents || []).slice(0, 2);
   const frameClass = item.visualType === "review" ? "col-frame is-amber" : "col-frame";
-  const hasImage = Boolean(item.previewImage) && item.visualType !== "teaching";
-
-  if (!hasImage) {
-    const chips = (item.tags || []).slice(0, 4)
-      .map((t) => `<em>${t}</em>`)
-      .join("");
-    const lines = (item.evidenceItems || []).slice(0, 3)
-      .map((t, i) => `<li>${i + 1}. ${t}</li>`)
-      .join("");
-    return `
-      <div class="col-panel col-panel--text">
-        <div class="col-panel-bar"><i></i><i></i><i></i><strong>${title}</strong></div>
-        <div class="col-panel-body">
-          <div class="col-panel-summary">
-            <span>${item.agent || "输出"}</span>
-            <strong>${item.screenCopy || item.title || ""}</strong>
-            <ol>${lines}</ol>
-            <div class="col-chip-row">${chips}</div>
-          </div>
-        </div>
-      </div>`;
-  }
 
   const pointsHtml = points
     .map(
