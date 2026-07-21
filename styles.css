@@ -273,7 +273,6 @@ h3 {
 /* 大标题衬线；卡片小标题仍走无衬线，保持信息密度 */
 .hero-subtitle,
 .demo-copy h2,
-.why-section h2,
 .how-section h2,
 .fit-section h2,
 .section .split-lead h2 {
@@ -293,7 +292,6 @@ h3 {
 .hero-copy,
 .split-lead > p,
 .logic-strip p,
-.challenge-rail p,
 .solution-steps p,
 .workflow-copy p,
 .ecosystem-flow p,
@@ -367,7 +365,6 @@ h3 {
 }
 
 .logic-strip,
-.challenge-rail,
 .ecosystem-flow,
 .metric-board {
   position: relative;
@@ -385,7 +382,6 @@ h3 {
 }
 
 .logic-strip article,
-.challenge-rail article,
 .ecosystem-flow article,
 .metric-board article {
   min-height: 228px;
@@ -399,32 +395,6 @@ h3 {
   margin-bottom: 32px;
   color: var(--teal-dark);
   font-weight: 900;
-}
-
-.challenge-rail {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.challenge-rail article {
-  transition: transform 220ms ease, background 220ms ease;
-}
-
-.challenge-rail article:hover {
-  transform: translateY(-6px);
-  background: #fff;
-}
-
-.challenge-rail strong {
-  display: inline-flex;
-  min-width: 72px;
-  min-height: 72px;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 30px;
-  border-radius: 50%;
-  color: #fff;
-  background: var(--ink);
-  font-size: 20px;
 }
 
 .solution-canvas {
@@ -1508,7 +1478,6 @@ h3 {
 .reveal,
 .reveal-block,
 .logic-strip article,
-.challenge-rail article,
 .solution-steps article,
 .ecosystem-flow article,
 .metric-board article {
@@ -1520,7 +1489,6 @@ h3 {
 .reveal.is-visible,
 .reveal-block.is-visible,
 .is-visible .logic-strip article,
-.is-visible .challenge-rail article,
 .is-visible .solution-steps article,
 .is-visible .ecosystem-flow article,
 .is-visible .metric-board article {
@@ -1529,7 +1497,6 @@ h3 {
 }
 
 .is-visible .logic-strip article:nth-child(2),
-.is-visible .challenge-rail article:nth-child(2),
 .is-visible .solution-steps article:nth-child(2),
 .is-visible .ecosystem-flow article:nth-child(2),
 .is-visible .metric-board article:nth-child(2) {
@@ -1537,7 +1504,6 @@ h3 {
 }
 
 .is-visible .logic-strip article:nth-child(3),
-.is-visible .challenge-rail article:nth-child(3),
 .is-visible .solution-steps article:nth-child(3),
 .is-visible .ecosystem-flow article:nth-child(3),
 .is-visible .metric-board article:nth-child(3) {
@@ -1562,7 +1528,6 @@ h3 {
   }
 
   .logic-strip,
-  .challenge-rail,
   .ecosystem-flow,
   .metric-board,
   .stepper,
@@ -1688,7 +1653,6 @@ h3 {
   }
 
   .logic-strip,
-  .challenge-rail,
   .ecosystem-flow,
   .metric-board,
   .stepper,
@@ -1699,7 +1663,6 @@ h3 {
   }
 
   .logic-strip article,
-  .challenge-rail article,
   .ecosystem-flow article,
   .metric-board article {
     min-height: auto;
@@ -1863,33 +1826,9 @@ h3 {
   align-self: end;
 }
 
-.why-section .split-lead,
 .how-section .split-lead,
 .fit-section .split-lead {
   margin-bottom: 28px;
-}
-
-.principle-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 12px;
-  margin: 28px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.principle-tags li {
-  padding: 10px 16px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--teal-dark);
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.why-challenges {
-  margin-top: 8px;
 }
 
 .compact-chain {
@@ -2051,10 +1990,6 @@ h3 {
   .hero-proof-compact {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .principle-tags {
-    gap: 8px;
   }
 }
 
