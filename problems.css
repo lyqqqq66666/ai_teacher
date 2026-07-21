@@ -1,0 +1,158 @@
+/* 命题对照：首页内嵌区块 #problems */
+
+#problems.problems-inline {
+  max-width: none;
+}
+
+#problems .problems-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -8px 0 28px;
+}
+
+#problems .problems-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#problems .problems-block {
+  margin-bottom: 36px;
+}
+
+#problems .problems-section-head.compact {
+  margin-bottom: 16px;
+}
+
+#problems .problems-subhead {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.8vw, 30px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+#problems .problem-list {
+  display: grid;
+  gap: 14px;
+}
+
+#problems .problem-card {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 8px 18px;
+  padding: 22px 22px 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(16, 32, 42, 0.04);
+}
+
+#problems .problem-card .no {
+  grid-row: 1 / span 3;
+  align-self: start;
+  color: var(--teal-dark);
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+#problems .problem-card h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+#problems .pair {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+#problems .pair:first-of-type {
+  margin-top: 4px;
+}
+
+#problems .pair .label {
+  padding-top: 2px;
+  color: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+#problems .pair .label.is-sol {
+  color: var(--blue);
+}
+
+#problems .pair p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 600;
+}
+
+#problems .pair .proof {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#problems .extra-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+#problems .extra-card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--soft-2);
+}
+
+#problems .extra-card h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+
+#problems .extra-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+#problems .problems-cta {
+  margin-top: 8px;
+}
+
+@media (max-width: 820px) {
+  #problems .extra-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #problems .problem-card {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  #problems .pair {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

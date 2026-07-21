@@ -14,6 +14,11 @@
   --amber: #f0a33a;
   --shadow: 0 24px 70px rgba(16, 32, 42, 0.12);
   --header-h: 74px;
+  /* Claude 风格大标题：西文 Newsreader + 中文 Noto Serif SC */
+  --font-display: "Newsreader", "Noto Serif SC", "Songti SC", "STSong",
+    "Source Han Serif SC", "Source Han Serif CN", serif;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 * {
@@ -26,9 +31,7 @@ html {
 
 body {
   margin: 0;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--font-sans);
   color: var(--ink);
   background: var(--paper);
   letter-spacing: 0;
@@ -242,16 +245,24 @@ p {
 
 h1 {
   margin-bottom: 22px;
+  font-family: var(--font-display);
   font-size: clamp(70px, 9.2vw, 126px);
-  line-height: 0.92;
-  letter-spacing: 0;
+  font-weight: 600;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  font-optical-sizing: auto;
+  text-wrap: balance;
 }
 
 h2 {
   margin-bottom: 0;
-  font-size: clamp(36px, 5.6vw, 76px);
-  line-height: 1.03;
-  letter-spacing: 0;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5.2vw, 68px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  font-optical-sizing: auto;
+  text-wrap: balance;
 }
 
 h3 {
@@ -259,12 +270,24 @@ h3 {
   font-size: 22px;
 }
 
+/* 大标题衬线；卡片小标题仍走无衬线，保持信息密度 */
+.hero-subtitle,
+.demo-copy h2,
+.why-section h2,
+.how-section h2,
+.fit-section h2,
+.section .split-lead h2 {
+  font-family: var(--font-display);
+}
+
 .hero-subtitle {
   max-width: 640px;
   margin-bottom: 18px;
+  font-family: var(--font-display);
   font-size: clamp(28px, 3.5vw, 44px);
-  line-height: 1.15;
-  font-weight: 900;
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
 }
 
 .hero-copy,

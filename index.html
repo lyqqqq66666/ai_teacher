@@ -9,7 +9,14 @@
       content="希沃智教π：教师端采集纸质作业，AI 完成切题、识别与有证据的判分，结果回流希沃讲评与飞书复核。"
     />
     <link rel="icon" href="./assets/favicon-pi.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Newsreader:opsz,wght@6..72,500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./problems.css?v=inline-1" />
   </head>
   <body>
     <header class="site-header is-at-top" aria-label="主导航">
@@ -22,6 +29,7 @@
         <a href="#how">怎么做成</a>
         <a href="#demo">可试用</a>
         <a href="#fit">如何落地</a>
+        <a href="#problems">命题对照</a>
       </nav>
       <a class="header-action" href="./workbench/">打开工作台</a>
     </header>
@@ -314,6 +322,50 @@
           <a class="button secondary" href="#why">回到为何需要</a>
         </div>
       </section>
+
+      <section id="problems" class="section problems-inline reveal-block" aria-labelledby="problems-title">
+        <div class="section-kicker">04 · Brief</div>
+        <div class="split-lead">
+          <div>
+            <p class="eyebrow">命题对照 · 题目.html</p>
+            <h2 id="problems-title">命题要求与我们的解法</h2>
+          </div>
+          <p class="lead-one-liner" id="scene-lead">
+            正在载入《题目.html》赛道说明…
+          </p>
+        </div>
+        <div class="problems-meta" id="source-meta"></div>
+
+        <div class="problems-block">
+          <div class="problems-section-head compact">
+            <p class="eyebrow">核心能力要求</p>
+            <h3 class="problems-subhead">命题五条能力，逐条落地</h3>
+          </div>
+          <div class="problem-list" id="capability-list"></div>
+        </div>
+
+        <div class="problems-block">
+          <div class="problems-section-head compact">
+            <p class="eyebrow">交付要求</p>
+            <h3 class="problems-subhead">Demo · 样例链路 · 技术说明</h3>
+          </div>
+          <div class="problem-list" id="delivery-list"></div>
+        </div>
+
+        <div class="problems-block">
+          <div class="problems-section-head compact">
+            <p class="eyebrow">额外现场能力</p>
+            <h3 class="problems-subhead">为「不漏一题，不落一人」加的保险</h3>
+          </div>
+          <div class="extra-grid" id="extra-list"></div>
+        </div>
+
+        <div class="fit-cta problems-cta">
+          <a class="button primary" href="./workbench/">去工作台验证</a>
+          <a class="button secondary" href="#how">看产品路径</a>
+        </div>
+      </section>
+
     </main>
 
     <footer class="site-footer">
@@ -321,6 +373,8 @@
       <span>让纸质作业的「评」，自然回到希沃课堂。</span>
     </footer>
 
-    <script src="./script.js?v=demo-sample-5"></script>
+    <script src="./data/topic-brief.js"></script>
+    <script src="./problems.js?v=inline-1"></script>
+    <script src="./script.js?v=demo-sample-6"></script>
   </body>
 </html>
